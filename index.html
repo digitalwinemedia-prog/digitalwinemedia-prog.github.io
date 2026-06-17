@@ -103,6 +103,7 @@
 
   /* =================================================== HERO */
   #hero{height:100vh;min-height:680px;background:var(--void);}
+  @supports (height:100dvh){ #hero{height:100dvh;} }
   #hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.46;filter:grayscale(.4) contrast(1.3) brightness(.8);}
   .hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.7) 45%, rgba(0,0,0,.98) 100%);box-shadow:inset 0 0 220px rgba(0,0,0,.85);}
   .hero-inner{position:relative;z-index:5;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:34px clamp(20px,5vw,64px);color:var(--cream);}
@@ -181,8 +182,12 @@
   .t-small{grid-row:span 2;}
 
   @media (max-width:880px){
-    .work-collage{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
-    .t-wide,.t-wide2{grid-column:span 2;}
+    .work-collage{grid-template-columns:repeat(2,1fr);grid-auto-rows:190px;grid-auto-flow:row dense;}
+    .work-collage .tile{grid-column:auto !important;grid-row:auto !important;}
+    .work-collage .t-wide,.work-collage .t-wide2{grid-column:span 2 !important;}
+  }
+  @media (max-width:520px){
+    #hero{min-height:600px;}
   }
 
   /* =================================================== PROCESS */
@@ -290,7 +295,7 @@
       <h2 class="manifesto-statement">Real moments,<br>not staged ones.<br><span class="muted">That's the whole pitch.</span></h2>
     </div>
     <div class="manifesto-figure reveal reveal-d2">
-      <img src="deck-assets/img/leadphoto1.jpg" alt="On location, night shoot">
+      <img src="deck-assets/img/website-hero.jpg" alt="On location, night shoot">
       <div class="cap"><span>ON LOCATION</span><span>DWM ARCHIVE</span></div>
     </div>
   </div>
