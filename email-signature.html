@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Wine Media — Email Signature</title>
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#0c0c0c;
+    color:#ede7d9;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:50px 20px 80px;
+  }
+  .wrap{max-width:680px;width:100%;}
+  .eyebrow{
+    font-family:'Courier New',monospace;
+    font-size:11px;
+    letter-spacing:.25em;
+    text-transform:uppercase;
+    color:#9fc02a;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Arial Black',Arial,sans-serif;
+    font-weight:900;
+    font-size:clamp(28px,5vw,42px);
+    letter-spacing:-0.01em;
+    text-transform:uppercase;
+    margin:0 0 14px;
+    line-height:1.05;
+  }
+  h1 b{color:#d7ff3d;}
+  p.lede{
+    color:#d9d2c0;
+    font-size:14.5px;
+    line-height:1.6;
+    margin:0 0 36px;
+    max-width:540px;
+  }
+  .steps{
+    font-family:'Courier New',monospace;
+    font-size:12.5px;
+    color:#d9d2c0;
+    line-height:2;
+    margin:0 0 30px;
+    padding-left:0;
+    list-style:none;
+    counter-reset:step;
+  }
+  .steps li{counter-increment:step;padding-left:30px;position:relative;margin-bottom:4px;}
+  .steps li::before{
+    content:counter(step);
+    position:absolute;left:0;top:0;
+    color:#0c0c0c;background:#d7ff3d;
+    width:18px;height:18px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:bold;
+  }
+  .preview-shell{
+    background:#ede7d9;
+    border-radius:10px;
+    padding:34px;
+    box-shadow:0 30px 80px rgba(0,0,0,.55), inset 0 0 0 1px rgba(12,12,12,.06);
+  }
+  .preview-label{
+    font-family:'Courier New',monospace;
+    font-size:10.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(12,12,12,0.4);
+    margin:0 0 18px;
+  }
+  /* === Everything inside #sig-block is exactly what gets copied === */
+  #sig-block table{border-collapse:collapse;}
+  #sig-block img{display:block;border:0;outline:none;text-decoration:none;}
+  #sig-block a{text-decoration:none;}
+
+  .actions{
+    display:flex;
+    gap:14px;
+    margin-top:30px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  #copyBtn{
+    font-family:'Courier New',monospace;
+    font-size:13px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    font-weight:bold;
+    background:#d7ff3d;
+    color:#0c0c0c;
+    border:none;
+    padding:14px 26px;
+    border-radius:4px;
+    cursor:pointer;
+    transition:transform .15s, box-shadow .15s;
+  }
+  #copyBtn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(215,255,61,.25);}
+  #copyBtn:active{transform:translateY(0);}
+  #copyStatus{
+    font-family:'Courier New',monospace;
+    font-size:12px;
+    color:#9fc02a;
+    opacity:0;
+    transition:opacity .25s;
+  }
+  #copyStatus.show{opacity:1;}
+  .fallback{
+    margin-top:26px;
+    font-family:'Courier New',monospace;
+    font-size:11.5px;
+    color:rgba(237,231,217,0.4);
+    border-left:2px solid #9fc02a;
+    padding-left:14px;
+    line-height:1.7;
+  }
+  .foot{
+    margin-top:60px;
+    font-family:'Courier New',monospace;
+    font-size:10.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:rgba(237,231,217,0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Digital Wine Media — Signature Kit</div>
+    <h1>Your <b>Animated</b><br>Email Signature</h1>
+    <p class="lede">A glitch-styled, on-brand signature with a looping animated mark. Hit the button to copy it as rich formatting, then paste it straight into your email client's signature settings — the GIF keeps animating because it loads live from the web, not as a flattened image.</p>
+
+    <ol class="steps">
+      <li>Click "Copy Signature" below</li>
+      <li>Open Gmail → Settings → See all settings → Signature</li>
+      <li>Click into the signature box and paste (Cmd/Ctrl + V)</li>
+      <li>Save changes — you're done</li>
+    </ol>
+
+    <div class="preview-shell">
+      <div class="preview-label">Live preview — this exact block gets copied</div>
+
+      <!-- ===================== SIGNATURE BLOCK START ===================== -->
+      <div id="sig-block">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">
+          <tr>
+            <td style="padding:0 18px 0 0;vertical-align:middle;">
+              <a href="https://digitalwinemedia-prog.github.io/" style="text-decoration:none;">
+                <img src="https://digitalwinemedia-prog.github.io/deck-assets/img/signature.gif" width="260" alt="Digital Wine Media" style="display:block;border:0;border-radius:3px;">
+              </a>
+            </td>
+            <td style="padding:0 0 0 18px;border-left:2px solid #d7ff3d;vertical-align:middle;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;letter-spacing:.03em;color:#0c0c0c;padding-bottom:3px;">DILLON WARD</td></tr>
+                <tr><td style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#5c7a17;font-weight:bold;padding-bottom:9px;">Founder &amp; Director — Digital Wine Media</td></tr>
+                <tr><td style="font-family:'Courier New',Courier,monospace;font-size:11px;color:#6b6b66;line-height:1.8;">
+                  DUBLIN, IRELAND&nbsp;·&nbsp;AVAILABLE WORLDWIDE<br>
+                  <a href="mailto:digitalwinemedia@gmail.com" style="color:#0c0c0c;text-decoration:none;border-bottom:1px solid #0c0c0c;">digitalwinemedia@gmail.com</a>
+                  &nbsp;·&nbsp;
+                  <a href="https://digitalwinemedia-prog.github.io/" style="color:#0c0c0c;text-decoration:none;border-bottom:1px solid #0c0c0c;">Portfolio</a>
+                  &nbsp;·&nbsp;
+                  <a href="https://instagram.com/dillonwardd" style="color:#0c0c0c;text-decoration:none;border-bottom:1px solid #0c0c0c;">@dillonwardd</a>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <!-- ===================== SIGNATURE BLOCK END ===================== -->
+
+    </div>
+
+    <div class="actions">
+      <button id="copyBtn" onclick="copySignature()">Copy Signature</button>
+      <span id="copyStatus">✓ Copied — now paste it into Gmail</span>
+    </div>
+
+    <div class="fallback">
+      Button not working, or using a different email client? Click anywhere inside the preview box above, press Cmd/Ctrl+A to select just that block, then Cmd/Ctrl+C to copy — then paste into your signature settings the same way.
+    </div>
+
+    <div class="foot">Digital Wine Media — Dublin, Ireland — Est. 2024</div>
+  </div>
+
+<script>
+function copySignature(){
+  const node = document.getElementById('sig-block');
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) { ok = false; }
+  sel.removeAllRanges();
+
+  const status = document.getElementById('copyStatus');
+  if(ok){
+    status.textContent = '✓ Copied — now paste it into Gmail';
+  } else {
+    status.textContent = 'Copy blocked — use the manual select method below';
+  }
+  status.classList.add('show');
+  setTimeout(()=>status.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
