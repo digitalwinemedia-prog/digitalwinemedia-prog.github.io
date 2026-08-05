@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Digital Wine Media — Capabilities</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+
+/* ── TOKENS ── */
+:root{
+  --ink:#0c0c0c;
+  --void:#000;
+  --acid:#d7ff3d;
+  --blood:#ff3b30;
+  --cream:#ede7d9;
+  --cream-dim:#d9d2c0;
+  --mid:#1a1a1a;
+  --line:rgba(237,231,217,0.1);
+  --display:'Archivo Black',sans-serif;
+  --mono:'Space Mono',monospace;
+  --body:'Inter',sans-serif;
+}
+
+/* ── DECK SHELL ── */
+#deck{
+  position:fixed;inset:0;
+  overflow:hidden;
+}
+
+/* ── SLIDE ── */
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(28px,5vw,64px);
+  background:var(--ink);
+  opacity:0;pointer-events:none;
+  transition:opacity 0s;
+  z-index:1;
+}
+.slide.active{opacity:1;pointer-events:all;z-index:10;}
+.slide.exit{opacity:0;z-index:9;}
+
+/* ── GRAIN ── */
+.grain{
+  position:fixed;inset:0;z-index:9000;pointer-events:none;
+  opacity:0.055;
+  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4t5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGTk5OXl5eZmZmlpaWsiIAAAAGjSURBVEjH7ZZJDoMwDEUDmMGEee7/oK2hFARJFxWV8FYv0pP/YlscY4wxXiE5RJ07l0pS4B0CPRTgnDOEEJqWgXPOuSmlIYQQWmvrnGutJaW0iIiIiIiIiIiIiIiIiIiIiIiIqPMBCxABCxABCxABCxABCxABCxABCxABCxABCxABCxABCxD5f2CPFXwHTkBvE8FVFDEHRVhSIiIiIiIiIiJqVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==");
+  background-size:64px 64px;
+}
+.scanlines{
+  position:fixed;inset:0;z-index:8998;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 4px);
+}
+.frame{
+  position:fixed;inset:10px;z-index:8999;pointer-events:none;
+  border:1px solid rgba(237,231,217,0.07);
+}
+
+/* ── PROGRESS ── */
+#progress{
+  position:fixed;top:0;left:0;height:2px;background:var(--acid);
+  z-index:9999;transition:width .6s cubic-bezier(.16,.84,.44,1);
+}
+
+/* ── NAV DOTS ── */
+#nav{
+  position:fixed;right:20px;top:50%;transform:translateY(-50%);
+  z-index:9999;display:flex;flex-direction:column;gap:10px;
+}
+#nav span{
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(237,231,217,0.25);
+  cursor:pointer;transition:all .3s;display:block;
+}
+#nav span.on{background:var(--blood);transform:scale(2);}
+
+/* ── SLIDE COUNT ── */
+#count{
+  position:fixed;bottom:22px;right:clamp(20px,4vw,48px);
+  font-family:var(--mono);font-size:11px;color:rgba(237,231,217,0.3);
+  z-index:9999;letter-spacing:.12em;
+}
+
+/* ── EYEBROW ── */
+.eyebrow{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--cream-dim);margin-bottom:18px;
+}
+.eyebrow::before{content:'';width:22px;height:1px;background:var(--acid);}
+.eyebrow::after{content:'';width:4px;height:4px;border-radius:50%;background:var(--blood);}
+
+/* ── TITLES ── */
+.title{
+  font-family:var(--display);text-transform:uppercase;
+  line-height:.88;letter-spacing:-.02em;
+  color:var(--cream);
+}
+.t-xl{font-size:clamp(52px,12vw,180px);}
+.t-lg{font-size:clamp(40px,8vw,110px);}
+.t-md{font-size:clamp(28px,5vw,68px);}
+.accent{color:var(--acid);}
+.blood{color:var(--blood);}
+
+/* ── BODY ── */
+.body{
+  font-family:var(--body);font-size:clamp(13px,1.4vw,17px);
+  line-height:1.7;color:var(--cream-dim);max-width:600px;
+}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--cream-dim);}
+
+/* ── DIVIDER ── */
+.rule{height:1px;background:var(--line);margin:24px 0;}
+.acid-line{height:2px;background:var(--acid);width:40px;margin:16px 0;}
+
+/* ── GLITCH ANIM ── */
+@keyframes glitch{
+  0%{clip-path:inset(0 0 100% 0);transform:translate(0);}
+  10%{clip-path:inset(8% 0 62% 0);transform:translate(-4px,0);}
+  20%{clip-path:inset(58% 0 8% 0);transform:translate(4px,0);}
+  30%{clip-path:inset(0 0 0 0);transform:translate(0);}
+  100%{clip-path:inset(0 0 0 0);transform:translate(0);}
+}
+@keyframes glitch2{
+  0%{clip-path:inset(0 0 100% 0);}
+  5%{clip-path:inset(62% 0 18% 0);transform:translate(6px,0);}
+  15%{clip-path:inset(18% 0 52% 0);transform:translate(-6px,0);}
+  25%{clip-path:inset(0 0 0 0);transform:translate(0);}
+  100%{clip-path:inset(0 0 0 0);}
+}
+@keyframes flicker{
+  0%,92%,100%{opacity:1;}
+  93%{opacity:.4;}
+  95%{opacity:1;}
+  97%{opacity:.2;}
+  99%{opacity:1;}
+}
+@keyframes scanFlash{
+  0%{transform:translateY(-100%);}
+  100%{transform:translateY(100vh);}
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(30px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{
+  from{opacity:0;}to{opacity:1;}
+}
+@keyframes barIn{
+  from{transform:scaleX(0);}to{transform:scaleX(1);}
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+@keyframes bloodPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,0);}50%{box-shadow:0 0 0 6px rgba(255,59,48,0.18);}}
+
+.glitch-title{position:relative;}
+.glitch-title::before,.glitch-title::after{
+  content:attr(data-text);position:absolute;top:0;left:0;width:100%;
+  font-family:inherit;font-size:inherit;font-weight:inherit;
+  text-transform:inherit;letter-spacing:inherit;line-height:inherit;
+  pointer-events:none;
+}
+.glitch-title::before{color:var(--blood);animation:glitch 3s steps(2) infinite;}
+.glitch-title::after{color:var(--acid);animation:glitch2 3s steps(2) .12s infinite;}
+
+/* ── SCAN LINE (transition) ── */
+.scan-flash{
+  position:fixed;top:0;left:0;width:100%;height:3px;
+  background:linear-gradient(90deg,transparent,var(--acid),transparent);
+  z-index:9990;pointer-events:none;opacity:0;
+}
+.scan-flash.run{animation:scanFlash .45s ease-out forwards;opacity:1;}
+
+/* ── SLIDE CONTENT ENTRANCE ── */
+.slide.active .anim{
+  animation:fadeUp .7s cubic-bezier(.16,.84,.44,1) both;
+}
+.slide.active .anim-d1{animation-delay:.08s;}
+.slide.active .anim-d2{animation-delay:.18s;}
+.slide.active .anim-d3{animation-delay:.28s;}
+.slide.active .anim-d4{animation-delay:.38s;}
+.slide.active .anim-d5{animation-delay:.48s;}
+.slide.active .anim-d6{animation-delay:.58s;}
+
+/* ── GRID HELPERS ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.stat-row{display:flex;gap:clamp(24px,4vw,56px);flex-wrap:wrap;margin-top:32px;}
+.stat b{display:block;font-family:var(--display);font-size:clamp(28px,4vw,52px);color:var(--cream);}
+.stat span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-dim);}
+
+/* ── CAP CARD ── */
+.cap-card{
+  background:var(--mid);padding:28px 22px;border:1px solid var(--line);
+  position:relative;overflow:hidden;
+  transition:border-color .3s;
+}
+.cap-card::before{
+  content:'';position:absolute;top:0;left:0;width:2px;height:0;
+  background:var(--acid);transition:height .4s;
+}
+.cap-card:hover::before{height:100%;}
+.cap-card:hover{border-color:rgba(215,255,61,0.2);}
+.cap-num{font-family:var(--mono);font-size:10px;color:var(--acid);margin-bottom:14px;}
+.cap-card h3{font-family:var(--display);font-size:20px;text-transform:uppercase;color:var(--cream);margin-bottom:10px;}
+.cap-card p{font-family:var(--body);font-size:12px;line-height:1.65;color:var(--cream-dim);}
+
+/* ── PROCESS ROWS ── */
+.process-row{
+  display:grid;grid-template-columns:56px 1fr 1.4fr;
+  gap:20px;padding:20px 0;border-bottom:1px solid var(--line);
+  align-items:center;
+}
+.pnum{font-family:var(--display);font-size:28px;color:var(--acid);}
+.process-row h3{font-family:var(--display);font-size:clamp(20px,2.8vw,30px);text-transform:uppercase;color:var(--cream);}
+.process-row p{font-family:var(--body);font-size:12px;line-height:1.65;color:var(--cream-dim);}
+
+/* ── MARQUEE ── */
+.marquee-wrap{overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;margin:30px 0;}
+.marquee-track{display:flex;gap:48px;white-space:nowrap;animation:marqueeScroll 28s linear infinite;}
+.marquee-track span{font-family:var(--display);font-size:clamp(18px,2.4vw,28px);text-transform:uppercase;color:var(--cream);opacity:.8;}
+.marquee-track span.x{color:var(--acid);}
+@keyframes marqueeScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ── LIVE BADGE ── */
+.live-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--blood);color:var(--cream);
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+  padding:4px 10px;text-transform:uppercase;margin-bottom:16px;
+}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--cream);animation:blink 1.2s infinite;}
+
+/* ── PILL ── */
+.pill{
+  display:inline-block;border:1px solid rgba(237,231,217,0.2);
+  padding:5px 14px;border-radius:100px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--cream-dim);margin:4px 3px 0 0;
+}
+
+/* ── QUOTE BLOCK ── */
+.q-block{
+  border-left:2px solid var(--acid);padding-left:22px;margin:16px 0;
+}
+.q-block p{font-family:var(--body);font-size:clamp(15px,1.8vw,22px);line-height:1.5;color:var(--cream);font-style:italic;}
+.q-block cite{font-family:var(--mono);font-size:10px;color:var(--acid);display:block;margin-top:10px;font-style:normal;}
+
+/* ── TABLE ── */
+.price-table{width:100%;border-collapse:collapse;margin-top:24px;}
+.price-table th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acid);text-align:left;padding:10px 0;border-bottom:1px solid var(--line);}
+.price-table td{font-family:var(--body);font-size:13px;color:var(--cream-dim);padding:12px 0;border-bottom:1px solid rgba(237,231,217,0.06);}
+.price-table td:last-child{color:var(--cream);font-weight:600;text-align:right;}
+.price-table tr.total td{color:var(--acid);font-weight:700;border-top:1px solid var(--acid);border-bottom:none;padding-top:16px;}
+
+/* ── COVER SPECIFIC ── */
+#s0{background:var(--void);}
+#s0 .wordmark{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--cream-dim);}
+#s0 .wordmark b{color:var(--acid);}
+#s0 .corner-mark{position:absolute;top:clamp(20px,3vw,40px);right:clamp(20px,3vw,40px);}
+#s0 .bottom-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:18px clamp(28px,5vw,64px);
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--line);
+}
+
+/* ── VIEWFINDER LOGO ── */
+.vf-logo{display:inline-block;position:relative;}
+.vf-logo svg{display:block;}
+
+/* ── CTA SLIDE ── */
+#s-cta{background:var(--void);}
+#s-cta .cta-email{
+  font-family:var(--mono);font-size:clamp(13px,2vw,22px);
+  color:var(--cream);text-decoration:none;
+  border-bottom:1px solid rgba(237,231,217,0.3);padding-bottom:4px;
+  transition:color .3s,border-color .3s;
+}
+#s-cta .cta-email:hover{color:var(--acid);border-color:var(--acid);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:680px){
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .process-row{grid-template-columns:40px 1fr;gap:12px;}
+  .process-row p{grid-column:2;}
+  #nav{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  .glitch-title::before,.glitch-title::after{display:none;}
+  .slide.active .anim{animation:none;opacity:1;}
+  .marquee-track{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="scanlines"></div>
+<div class="frame"></div>
+<div id="progress"></div>
+<div id="nav"></div>
+<div id="count"></div>
+<div class="scan-flash" id="scanFlash"></div>
+
+<div id="deck">
+
+<!-- ══ SLIDE 0 — COVER ══════════════════════════════════════════════════════ -->
+<div class="slide active" id="s0">
+  <div style="position:absolute;top:clamp(20px,3vw,40px);left:clamp(28px,5vw,64px);" class="anim">
+    <div class="wordmark">DIGITAL <b>WINE</b> MEDIA</div>
+  </div>
+
+  <!-- Viewfinder logo top right -->
+  <div class="corner-mark anim anim-d1">
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- film notches top -->
+      <rect x="10" y="0" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="37" y="0" width="9" height="5" fill="#0c0c0c"/>
+      <!-- film notches bottom -->
+      <rect x="10" y="51" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="37" y="51" width="9" height="5" fill="#0c0c0c"/>
+      <!-- corner brackets -->
+      <rect x="5" y="5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="49.5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="5" y="49.5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="49.5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="49.5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <!-- centre dot -->
+      <circle cx="28" cy="28" r="2.5" fill="#ff3b30"/>
+      <!-- DWM text -->
+      <text x="28" y="23" text-anchor="middle" fill="#d7ff3d" font-family="'Arial Black',sans-serif" font-size="9" font-weight="900" letter-spacing="1">DWM</text>
+    </svg>
+  </div>
+
+  <!-- Main title -->
+  <div style="position:relative;z-index:2;">
+    <h1 class="title t-xl glitch-title anim anim-d1" data-text="WE SHOOT">WE SHOOT</h1>
+    <h1 class="title t-xl anim anim-d2" style="color:var(--acid);animation:flicker 6s infinite .4s;">THE CHAOS.</h1>
+    <div class="rule anim anim-d3" style="max-width:500px;"></div>
+    <p class="body anim anim-d4" style="max-width:520px;font-size:clamp(12px,1.3vw,15px);">Festivals. Nightlife. Brand activations. Artist content. Travel. Shot, cut and delivered by a production house that has been in the pit since day one.</p>
+    <div style="margin-top:20px;" class="anim anim-d5">
+      <span class="pill">Festivals</span>
+      <span class="pill">Nightlife</span>
+      <span class="pill">Brand</span>
+      <span class="pill">Artist</span>
+      <span class="pill">Travel</span>
+    </div>
+  </div>
+
+  <div class="bottom-bar anim anim-d6">
+    <span class="mono">DUBLIN, IRELAND — AVAILABLE WORLDWIDE</span>
+    <span class="mono" style="color:var(--acid);">↓ SCROLL OR PRESS →</span>
+  </div>
+</div>
+
+<!-- ══ SLIDE 1 — MANIFESTO ══════════════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="eyebrow anim">01 — WHO WE ARE</div>
+  <h2 class="title t-lg anim anim-d1">THE<br><span class="accent">VISION.</span></h2>
+  <div class="acid-line anim anim-d2"></div>
+  <div class="two-col" style="margin-top:28px;">
+    <div>
+      <p class="body anim anim-d3">Digital Wine Media is not a typical video production company. It is a one-person studio built on years of being inside the rooms where culture happens — festival pits, nightclub booths, brand launches, artist sessions — and knowing instinctively how to capture what actually makes those moments feel the way they do.</p>
+      <p class="body anim anim-d4" style="margin-top:16px;">The output is darker, grittier, and more sinister in energy than anything else being produced in the Irish market. That is not a style choice. It is a point of view that has been earned on location, one shoot at a time.</p>
+    </div>
+    <div>
+      <div class="q-block anim anim-d3">
+        <p>"This is not work you can get from a typical videographer. It is a niche that very few operators occupy globally — and nobody in Ireland is doing it at this level."</p>
+        <cite>— Dillon Ward, Director & Founder</cite>
+      </div>
+      <div class="stat-row anim anim-d5" style="margin-top:24px;">
+        <div class="stat"><b>100<span style="color:var(--acid);">+</span></b><span>Flights in 18 months</span></div>
+        <div class="stat"><b>6<span style="color:var(--acid);">+</span></b><span>Countries shot</span></div>
+        <div class="stat"><b>1</b><span>Crew. Full service.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2 — CAPABILITIES ═══════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="eyebrow anim">02 — CAPABILITIES</div>
+  <h2 class="title t-md anim anim-d1">WHAT WE <span class="accent">ACTUALLY</span> DO.</h2>
+  <div class="rule anim anim-d2"></div>
+  <div class="three-col" style="margin-top:20px;">
+    <div class="cap-card anim anim-d2">
+      <div class="cap-num">01</div>
+      <h3>Festivals & Live Events</h3>
+      <p>Multi-cam recap edits, crowd energy, drone openers. Turned around while the moment is still trending.</p>
+    </div>
+    <div class="cap-card anim anim-d3">
+      <div class="cap-num">02</div>
+      <h3>Nightlife & DJ Culture</h3>
+      <p>Club nights, b2b sets, after-dark texture. We shoot low light like it is daylight.</p>
+    </div>
+    <div class="cap-card anim anim-d4">
+      <div class="cap-num">03</div>
+      <h3>Brand Activations</h3>
+      <p>Sponsor integrations and product-in-the-wild content that does not feel like an ad break.</p>
+    </div>
+    <div class="cap-card anim anim-d3">
+      <div class="cap-num">04</div>
+      <h3>Artist & Talent Content</h3>
+      <p>Music videos, press junkets, behind-the-scenes. Content that holds up next to the artist's own output.</p>
+    </div>
+    <div class="cap-card anim anim-d4">
+      <div class="cap-num">05</div>
+      <h3>Travel & Lifestyle</h3>
+      <p>Destination recaps shot the way the trip actually felt. Not how the brochure says it should.</p>
+    </div>
+    <div class="cap-card anim anim-d5" style="background:var(--acid);border-color:transparent;">
+      <div class="cap-num" style="color:var(--ink);">+</div>
+      <h3 style="color:var(--ink);">Full Post-Production</h3>
+      <p style="color:rgba(12,12,12,.7);">Colour grade, sound design, captioning and platform-specific cuts. Every project leaves edit-ready, not raw.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3 — PROCESS ════════════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="eyebrow anim">03 — HOW IT RUNS</div>
+  <h2 class="title t-md anim anim-d1">FROM BRIEF<br>TO <span class="accent">DELIVERED.</span></h2>
+  <div style="margin-top:28px;border-top:1px solid var(--line);">
+    <div class="process-row anim anim-d2">
+      <div class="pnum">01</div>
+      <h3>Brief & Concept</h3>
+      <p>Quick call. Clear brief. What is the event, the brand, the deadline. We come back with a shot list and a tone reference, not a generic proposal.</p>
+    </div>
+    <div class="process-row anim anim-d3">
+      <div class="pnum">02</div>
+      <h3>On the Ground</h3>
+      <p>We embed with the event or talent. Multi-cam where it counts, run-and-gun where it does not. We shoot for the edit, not for a highlight reel.</p>
+    </div>
+    <div class="process-row anim anim-d4">
+      <div class="pnum">03</div>
+      <h3>Cut & Colour</h3>
+      <p>Edit, grade, sound design — all in-house. Drafts turned around fast enough to still ride the momentum of the moment.</p>
+    </div>
+    <div class="process-row anim anim-d5" style="border-bottom:none;">
+      <div class="pnum">04</div>
+      <h3>Delivered, Platform-Ready</h3>
+      <p>Vertical, square, 16:9 — whatever the channel needs. Captioned, exported and ready to post. No extra round trip.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4 — CLIENTS / ROSTER ══════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="eyebrow anim">04 — WHO WE'VE WORKED WITH</div>
+  <h2 class="title t-md anim anim-d1">THE <span class="accent">ROSTER.</span></h2>
+  <div class="marquee-wrap anim anim-d2">
+    <div class="marquee-track">
+      <span>KNEECAP</span><span class="x">/</span><span>DEEP DISH</span><span class="x">/</span><span>DISTRICT X</span><span class="x">/</span>
+      <span>HEINEKEN</span><span class="x">/</span><span>JÄGERMEISTER</span><span class="x">/</span><span>WHITE CLAW</span><span class="x">/</span>
+      <span>BULMERS</span><span class="x">/</span><span>ROCK SHORE</span><span class="x">/</span><span>SEA SESSIONS</span><span class="x">/</span>
+      <span>INDEX</span><span class="x">/</span><span>RIORDAN</span><span class="x">/</span><span>DOVE CAMERON</span><span class="x">/</span>
+      <span>REBŪKE</span><span class="x">/</span><span>APEROL SPRITZ</span><span class="x">/</span><span>ASAHI</span><span class="x">/</span>
+      <span>KNEECAP</span><span class="x">/</span><span>DEEP DISH</span><span class="x">/</span><span>DISTRICT X</span><span class="x">/</span>
+      <span>HEINEKEN</span><span class="x">/</span><span>JÄGERMEISTER</span><span class="x">/</span><span>WHITE CLAW</span><span class="x">/</span>
+      <span>BULMERS</span><span class="x">/</span><span>ROCK SHORE</span><span class="x">/</span><span>SEA SESSIONS</span><span class="x">/</span>
+      <span>INDEX</span><span class="x">/</span><span>RIORDAN</span><span class="x">/</span><span>DOVE CAMERON</span><span class="x">/</span>
+      <span>REBŪKE</span><span class="x">/</span><span>APEROL SPRITZ</span><span class="x">/</span><span>ASAHI</span><span class="x">/</span>
+    </div>
+  </div>
+  <div class="three-col anim anim-d3" style="margin-top:20px;">
+    <div>
+      <div class="mono" style="color:var(--acid);margin-bottom:10px;">MUSIC & ARTISTS</div>
+      <p class="body" style="font-size:12px;">Kneecap · Deep Dish · Dubfire · Riordan · Rebūke · Dove Cameron · District X · Index</p>
+    </div>
+    <div>
+      <div class="mono" style="color:var(--acid);margin-bottom:10px;">ALCOHOL & FMCG</div>
+      <p class="body" style="font-size:12px;">Heineken · Jägermeister · Bulmers · Rock Shore · White Claw · Aperol Spritz · Asahi · Koppaberg · Coors Light</p>
+    </div>
+    <div>
+      <div class="mono" style="color:var(--acid);margin-bottom:10px;">FESTIVALS & EVENTS</div>
+      <p class="body" style="font-size:12px;">Sea Sessions · Electric Picnic · Snow Machine NZ · EP Ibiza · Temple Bar · Vicar Street</p>
+    </div>
+  </div>
+  <div class="stat-row anim anim-d4" style="margin-top:28px;padding-top:20px;border-top:1px solid var(--line);">
+    <div class="stat"><b style="color:var(--acid);">100%</b><span>Inbound clients</span></div>
+    <div class="stat"><b>6+</b><span>Countries shot</span></div>
+    <div class="stat"><b>3+</b><span>Years delivering</span></div>
+    <div class="stat"><b>0</b><span>Stock footage used. Ever.</span></div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5 — WHY DWM ═════════════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="eyebrow anim">05 — THE DIFFERENCE</div>
+  <h2 class="title t-md anim anim-d1">WHY <span class="accent">DWM.</span></h2>
+  <div class="rule anim anim-d2"></div>
+  <div class="two-col" style="margin-top:20px;gap:clamp(24px,4vw,60px);">
+    <div>
+      <p class="body anim anim-d3">Most production companies shoot events. We live inside them. There is a difference between pointing a camera at a room and actually understanding the culture you are documenting. DWM has earned that understanding over years of being the person in the pit, in the booth, at the shoot.</p>
+      <p class="body anim anim-d4" style="margin-top:16px;">The output is grittier, darker, more urgent than the standard Irish market produces. That is intentional. It is a niche built for brands that want to show up in culture, not just advertise next to it.</p>
+      <div class="live-badge anim anim-d5" style="margin-top:24px;">
+        <span class="live-dot"></span>ONE CREW. FULL SERVICE.
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;">
+        <div class="cap-card anim anim-d3" style="padding:18px 16px;">
+          <div class="cap-num">SPEED</div>
+          <p>48-hour turnaround on recaps when the moment matters. Same-day social cuts when required.</p>
+        </div>
+        <div class="cap-card anim anim-d4" style="padding:18px 16px;">
+          <div class="cap-num">AUTHENTICITY</div>
+          <p>Shot by someone who actually understands the culture. Not a crew that showed up with a brief.</p>
+        </div>
+        <div class="cap-card anim anim-d5" style="padding:18px 16px;">
+          <div class="cap-num">SCALE</div>
+          <p>One decision maker, one creative vision, zero agency overhead. You brief one person and get the output.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6 — CTA ════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-cta" style="background:var(--void);">
+  <h2 class="title t-xl glitch-title anim anim-d1" data-text="GOT A">GOT A</h2>
+  <h2 class="title t-xl anim anim-d2" style="color:var(--acid);">BRIEF?</h2>
+  <h2 class="title t-xl anim anim-d3" style="color:rgba(237,231,217,0.18);">LET'S SHOOT IT.</h2>
+  <div class="rule anim anim-d4" style="max-width:400px;margin:28px 0;"></div>
+  <div class="anim anim-d5">
+    <a class="cta-email" href="mailto:digitalwinemedia@gmail.com">digitalwinemedia@gmail.com</a>
+  </div>
+  <div class="anim anim-d6" style="margin-top:24px;">
+    <span class="mono">DUBLIN, IRELAND  ·  AVAILABLE FOR TRAVEL WORLDWIDE</span>
+  </div>
+  <!-- Viewfinder mark bottom right -->
+  <div style="position:absolute;bottom:clamp(24px,4vw,48px);right:clamp(28px,5vw,64px);opacity:.25;" class="anim anim-d6">
+    <svg width="80" height="80" viewBox="0 0 56 56" fill="none">
+      <rect x="10" y="0" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="37" y="0" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="10" y="51" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="37" y="51" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="5" y="5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="49.5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="5" y="49.5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="49.5" width="12" height="1.5" fill="#d7ff3d"/>
+      <rect x="49.5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <circle cx="28" cy="28" r="2.5" fill="#ff3b30"/>
+      <text x="28" y="23" text-anchor="middle" fill="#d7ff3d" font-family="'Arial Black',sans-serif" font-size="9" font-weight="900" letter-spacing="1">DWM</text>
+    </svg>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<script>
+(function(){
+'use strict';
+
+const slides = Array.from(document.querySelectorAll('.slide'));
+const total = slides.length;
+let current = 0;
+let transitioning = false;
+
+const progress = document.getElementById('progress');
+const navEl = document.getElementById('nav');
+const countEl = document.getElementById('count');
+const flash = document.getElementById('scanFlash');
+
+// Build nav dots
+slides.forEach((_,i)=>{
+  const s = document.createElement('span');
+  s.addEventListener('click',()=>goto(i));
+  navEl.appendChild(s);
+});
+
+function updateUI(){
+  const dots = navEl.querySelectorAll('span');
+  dots.forEach((d,i)=>d.classList.toggle('on', i===current));
+  progress.style.width = ((current/(total-1))*100)+'%';
+  countEl.textContent = String(current+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+}
+
+function runFlash(cb){
+  flash.classList.remove('run');
+  void flash.offsetWidth;
+  flash.classList.add('run');
+  setTimeout(cb, 200);
+}
+
+function goto(n){
+  if(n===current||transitioning) return;
+  transitioning=true;
+  runFlash(()=>{
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit');
+    setTimeout(()=>slides[current-1>=0?current:0].classList.remove('exit'),400);
+    current=n;
+    slides[current].classList.add('active');
+    // Re-trigger entrance anims
+    const anims = slides[current].querySelectorAll('.anim');
+    anims.forEach(el=>{
+      el.style.animation='none';
+      void el.offsetWidth;
+      el.style.animation='';
+    });
+    updateUI();
+    setTimeout(()=>{transitioning=false;},500);
+  });
+}
+
+function next(){ if(current<total-1) goto(current+1); }
+function prev(){ if(current>0) goto(current-1); }
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') next();
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') prev();
+});
+
+// Touch/swipe
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)){dx<-40?next():dx>40?prev():null;}
+  else{dy<-40?next():dy>40?prev():null;}
+},{passive:true});
+
+// Scroll wheel
+let wheelTimer=null;
+document.addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(wheelTimer) return;
+  wheelTimer=setTimeout(()=>{wheelTimer=null;},600);
+  e.deltaY>0?next():prev();
+},{passive:false});
+
+updateUI();
+})();
+</script>
+</body>
+</html>

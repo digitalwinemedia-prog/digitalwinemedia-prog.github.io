@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DWM — Business Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0c0c0c;color:#ede7d9;font-family:'Inter',sans-serif;min-height:100vh;}
+.grain{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0.04;background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4t5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGTk5OXl5eZmZmlpaWsiIAAAAGjSURBVEjH7ZZJDoMwDEUDmMGEee7/oK2hFARJFxWV8FYv0pP/YlscY4wxXiE5RJ07l0pS4B0CPRTgnDOEEJqWgXPOuSmlIYQQWmvrnGutJaW0iIiIiIiIiIiIiIiIiIiIiIiIqPMBCxABCxABCxABCxABCxABCxABCxABCxABCxABCxABCxD5f2CPFXwHTkBvE8FVFDEHRVhSIiIiIiIiIiJqVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==");background-size:64px 64px;}
+
+:root{--acid:#d7ff3d;--blood:#ff3b30;--cream:#ede7d9;--dim:#d9d2c0;--mid:#1a1a1a;--line:rgba(237,231,217,0.1);}
+
+/* NAV */
+.topbar{background:#000;border-bottom:1px solid var(--line);padding:0;display:flex;align-items:stretch;position:sticky;top:0;z-index:100;}
+.topbar-brand{padding:14px 24px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.08em;border-right:1px solid var(--line);display:flex;align-items:center;gap:8px;}
+.topbar-brand b{color:var(--acid);}
+.tab-nav{display:flex;overflow-x:auto;}
+.tab{padding:0 20px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;border-right:1px solid var(--line);display:flex;align-items:center;gap:8px;transition:all .2s;white-space:nowrap;}
+.tab:hover{color:var(--cream);}
+.tab.on{color:var(--acid);border-bottom-color:var(--acid);}
+.tab-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5;}
+.tab.on .tab-dot{opacity:1;}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:40px 24px 80px;}
+.section{display:none;}
+.section.on{display:block;}
+
+/* SECTION HEADER */
+.sec-head{margin-bottom:32px;}
+.sec-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--acid);display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.sec-eyebrow::before{content:'';width:18px;height:1px;background:var(--acid);}
+.sec-title{font-family:'Archivo Black',sans-serif;font-size:clamp(28px,4vw,52px);text-transform:uppercase;line-height:.9;color:var(--cream);}
+.sec-sub{font-family:'Inter',sans-serif;font-size:14px;line-height:1.65;color:var(--dim);max-width:580px;margin-top:12px;}
+
+/* CARDS */
+.card{background:var(--mid);border:1px solid var(--line);border-radius:4px;padding:24px;}
+.card-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--acid);margin-bottom:12px;}
+.card h3{font-family:'Archivo Black',sans-serif;font-size:18px;text-transform:uppercase;color:var(--cream);margin-bottom:8px;}
+.card p{font-size:13px;line-height:1.65;color:var(--dim);}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+
+/* STEP FLOW */
+.step-flow{display:flex;flex-direction:column;gap:0;}
+.step{display:grid;grid-template-columns:40px 1fr;gap:0;position:relative;}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(215,255,61,0.1);border:1px solid rgba(215,255,61,0.3);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;color:var(--acid);flex-shrink:0;margin-top:2px;}
+.step-num.done{background:rgba(215,255,61,0.2);border-color:var(--acid);}
+.step-content{padding:0 0 24px 16px;border-left:1px solid var(--line);margin-left:14px;}
+.step:last-child .step-content{border-left:1px solid transparent;}
+.step-title{font-size:14px;font-weight:600;color:var(--cream);margin-bottom:3px;}
+.step-desc{font-size:12px;color:var(--dim);line-height:1.55;}
+.step-tag{display:inline-block;background:rgba(237,231,217,0.08);border:1px solid var(--line);padding:2px 8px;font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);margin-top:6px;}
+.step-tag.acid{background:rgba(215,255,61,0.08);border-color:rgba(215,255,61,0.2);color:var(--acid);}
+
+/* EMAIL TEMPLATE */
+.email-block{background:#000;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:16px;}
+.email-header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center;}
+.email-badge{font-family:'Space Mono',monospace;font-size:9px;padding:3px 10px;border-radius:2px;}
+.email-badge.d0{background:rgba(215,255,61,0.1);color:var(--acid);border:1px solid rgba(215,255,61,0.2);}
+.email-badge.d3{background:rgba(237,231,217,0.06);color:var(--dim);border:1px solid var(--line);}
+.email-badge.d7{background:rgba(237,231,217,0.06);color:var(--dim);border:1px solid var(--line);}
+.email-badge.d14{background:rgba(255,59,48,0.08);color:var(--blood);border:1px solid rgba(255,59,48,0.2);}
+.email-badge.d30{background:rgba(237,231,217,0.06);color:var(--dim);border:1px solid var(--line);}
+.email-subject{font-size:12px;color:var(--cream);font-weight:500;}
+.email-body{padding:16px;font-size:12px;line-height:1.75;color:var(--dim);font-family:'Inter',sans-serif;white-space:pre-wrap;}
+.email-body b{color:var(--cream);font-weight:500;}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:24px;}
+.timeline::before{content:'';position:absolute;left:7px;top:8px;bottom:8px;width:1px;background:var(--line);}
+.tl-item{position:relative;padding:0 0 20px 20px;}
+.tl-dot{position:absolute;left:-9px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--mid);border:1.5px solid var(--acid);}
+.tl-dot.blood{border-color:var(--blood);}
+.tl-date{font-family:'Space Mono',monospace;font-size:9px;color:var(--acid);letter-spacing:.1em;margin-bottom:4px;}
+.tl-title{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:3px;}
+.tl-desc{font-size:12px;color:var(--dim);line-height:1.55;}
+
+/* CONTENT FORMULA */
+.formula-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.formula-input{background:#000;border:1px solid var(--line);padding:10px 14px;flex:1;border-radius:2px;}
+.formula-input .label{font-family:'Space Mono',monospace;font-size:9px;color:var(--acid);margin-bottom:3px;}
+.formula-input .val{font-size:12px;color:var(--cream);}
+.arrow{color:var(--acid);font-size:18px;flex-shrink:0;}
+.formula-output{background:rgba(215,255,61,0.06);border:1px solid rgba(215,255,61,0.15);padding:10px 14px;flex:1;border-radius:2px;}
+.formula-output .label{font-family:'Space Mono',monospace;font-size:9px;color:var(--acid);margin-bottom:3px;}
+.formula-output .val{font-size:12px;color:var(--cream);}
+
+/* WEEKLY BRIEF */
+.brief-section{background:#000;border:1px solid var(--line);border-radius:4px;margin-bottom:12px;}
+.brief-header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+.brief-num{font-family:'Space Mono',monospace;font-size:10px;color:var(--acid);}
+.brief-title{font-size:13px;font-weight:600;color:var(--cream);}
+.brief-body{padding:14px 16px;font-size:12px;line-height:1.65;color:var(--dim);}
+.brief-prompt{background:rgba(215,255,61,0.04);border-top:1px solid var(--line);padding:10px 16px;font-family:'Space Mono',monospace;font-size:10px;color:rgba(215,255,61,0.6);font-style:italic;}
+
+/* NOTION TABLE */
+.notion-table{width:100%;border-collapse:collapse;font-size:12px;}
+.notion-table th{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--acid);text-align:left;padding:10px 12px;border-bottom:1px solid rgba(215,255,61,0.2);font-weight:400;}
+.notion-table td{padding:11px 12px;border-bottom:1px solid var(--line);color:var(--dim);vertical-align:top;}
+.notion-table td:first-child{color:var(--cream);font-weight:500;}
+.notion-table tr:last-child td{border-bottom:none;}
+.status{display:inline-block;padding:2px 8px;border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;}
+.status.new{background:rgba(215,255,61,0.1);color:var(--acid);}
+.status.active{background:rgba(255,59,48,0.1);color:var(--blood);}
+.status.edit{background:rgba(237,231,217,0.08);color:var(--dim);}
+.status.done{background:rgba(0,200,100,0.1);color:#4dff9a;}
+
+/* RULE */
+.rule{height:1px;background:var(--line);margin:28px 0;}
+
+/* COPY BUTTON */
+.copy-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(215,255,61,0.1);border:1px solid rgba(215,255,61,0.2);color:var(--acid);font-family:'Space Mono',monospace;font-size:9px;padding:6px 12px;cursor:pointer;letter-spacing:.08em;transition:all .2s;border-radius:2px;}
+.copy-btn:hover{background:rgba(215,255,61,0.2);}
+.copy-btn.copied{background:rgba(0,200,100,0.1);border-color:rgba(0,200,100,0.3);color:#4dff9a;}
+
+@media(max-width:680px){
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .topbar-brand{display:none;}
+  .main{padding:24px 16px 60px;}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="topbar">
+  <div class="topbar-brand">DIGITAL <b>WINE</b> MEDIA · SYSTEMS</div>
+  <div class="tab-nav">
+    <div class="tab on" onclick="showTab('onboarding')"><span class="tab-dot"></span>Onboarding</div>
+    <div class="tab" onclick="showTab('followup')"><span class="tab-dot"></span>Follow-up</div>
+    <div class="tab" onclick="showTab('weekly')"><span class="tab-dot"></span>Weekly brief</div>
+    <div class="tab" onclick="showTab('content')"><span class="tab-dot"></span>Content pipeline</div>
+    <div class="tab" onclick="showTab('notion')"><span class="tab-dot"></span>Notion setup</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════ ONBOARDING ═══════════ -->
+<div class="section on" id="onboarding">
+  <div class="sec-head">
+    <div class="sec-eyebrow">System 01</div>
+    <h2 class="sec-title">Client<br>Onboarding</h2>
+    <p class="sec-sub">Every new client gets this exact flow. No more back-and-forth emails. From confirmation to shoot day, fully systematised.</p>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:28px;">
+    <div>
+      <div class="card-label">The flow</div>
+      <div class="step-flow">
+        <div class="step">
+          <div class="step-num done">01</div>
+          <div class="step-content">
+            <div class="step-title">Client confirms via email or WhatsApp</div>
+            <div class="step-desc">They say yes to the quote. Date is agreed verbally.</div>
+            <div class="step-tag acid">Trigger point</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <div class="step-title">Send onboarding email within 2 hours</div>
+            <div class="step-desc">Use the template below. Confirms the booking, sets expectations, links to the Notion brief doc.</div>
+            <div class="step-tag">Template below</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <div class="step-title">Raise 50% deposit invoice in Xero</div>
+            <div class="step-desc">Same day. Auto-reminder set for 7 days if unpaid. Date is NOT locked until deposit clears.</div>
+            <div class="step-tag">Xero → New Invoice</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <div class="step-title">Add to Notion pipeline</div>
+            <div class="step-desc">Project name, shoot date, client contact, deliverables, status: Confirmed.</div>
+            <div class="step-tag">Notion → Active Projects</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">05</div>
+          <div class="step-content">
+            <div class="step-title">Send shoot prep doc 48hrs before</div>
+            <div class="step-desc">Call time, location, parking, kit list, shot list. No surprises on the day.</div>
+            <div class="step-tag acid">Day before shoot</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card-label" style="margin-bottom:12px;">Onboarding email template</div>
+      <div class="email-block">
+        <div class="email-header">
+          <div class="email-badge d0">SEND IMMEDIATELY</div>
+          <div class="email-subject">DWM × [Client] — Booking confirmed</div>
+        </div>
+        <div class="email-body">Subject: DWM × [Client] — Booking confirmed ✓
+
+Hey [Name],
+
+Great to have this locked in.
+
+Here's everything you need to know:
+
+<b>Shoot date:</b> [Date]
+<b>Location:</b> [Location]
+<b>Call time:</b> [Time]
+<b>Deliverables:</b> [List]
+
+I'll send a deposit invoice today — 50% upfront to confirm the date, balance on delivery.
+
+One revision round is included per deliverable. Feedback window is 72 hours from delivery.
+
+Any questions before the day, just WhatsApp me directly.
+
+Looking forward to it.
+
+Cheers,
+Dillon
+Digital Wine Media</div>
+      </div>
+      <div class="card-label" style="margin-bottom:12px;margin-top:20px;">Shoot prep template (send 48hrs before)</div>
+      <div class="email-block">
+        <div class="email-header">
+          <div class="email-badge d0">48HRS BEFORE SHOOT</div>
+          <div class="email-subject">Tomorrow — shoot day details</div>
+        </div>
+        <div class="email-body">Subject: Tomorrow — shoot day details
+
+Hey [Name],
+
+Just getting everything set for tomorrow. Here's the rundown:
+
+<b>Call time:</b> [Time]
+<b>Location:</b> [Address / what3words]
+<b>Parking:</b> [Details]
+<b>Point of contact on the day:</b> [Name / number]
+
+<b>Shot list priorities:</b>
+— [Shot 1]
+— [Shot 2]
+— [Shot 3]
+
+I'll have both cameras with me. Looking forward to it.
+
+Cheers,
+Dillon</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="card-label" style="margin-bottom:16px;">Post-delivery checklist</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-label">On delivery</div>
+      <div class="step-flow" style="margin-top:4px;">
+        <div class="step"><div class="step-num" style="font-size:8px;">✓</div><div class="step-content" style="padding-bottom:10px;"><div class="step-title" style="font-size:12px;">Send Dropbox link</div><div class="step-desc">Clearly labelled files, platform-ready</div></div></div>
+        <div class="step"><div class="step-num" style="font-size:8px;">✓</div><div class="step-content" style="padding-bottom:10px;"><div class="step-title" style="font-size:12px;">Raise balance invoice</div><div class="step-desc">Remaining 50% via Xero, 14-day terms</div></div></div>
+        <div class="step"><div class="step-num" style="font-size:8px;">✓</div><div class="step-content" style="padding-bottom:0;"><div class="step-title" style="font-size:12px;">Update Notion status</div><div class="step-desc">Move to "Delivered — awaiting feedback"</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">After approval</div>
+      <div class="step-flow" style="margin-top:4px;">
+        <div class="step"><div class="step-num" style="font-size:8px;">✓</div><div class="step-content" style="padding-bottom:10px;"><div class="step-title" style="font-size:12px;">Confirm invoice paid</div><div class="step-desc">Chase if overdue after 14 days</div></div></div>
+        <div class="step"><div class="step-num" style="font-size:8px;">✓</div><div class="step-content" style="padding-bottom:10px;"><div class="step-title" style="font-size:12px;">Add to portfolio</div><div class="step-desc">Screenshot or clip for social proof</div></div></div>
+        <div class="step"><div class="step-num" style="font-size:8px;">✓</div><div class="step-content" style="padding-bottom:0;"><div class="step-title" style="font-size:12px;">Plant retainer seed</div><div class="step-desc">"Would ongoing work suit you?"</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Revision rules</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);margin-bottom:10px;">One round per deliverable, included. 72-hour feedback window — silence equals approval. Additional rounds at €150 each.</p>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);">State this in every onboarding email. Never start a second round without written confirmation it is within scope.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FOLLOW-UP ═══════════ -->
+<div class="section" id="followup">
+  <div class="sec-head">
+    <div class="sec-eyebrow">System 02</div>
+    <h2 class="sec-title">Lead<br>Follow-up</h2>
+    <p class="sec-sub">Five messages across 30 days. A warm lead should never go cold because you forgot to follow up. Copy, paste, send.</p>
+  </div>
+
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-badge d0">DAY 0 — QUOTE SENT</div>
+      <div class="email-subject">Initial pitch or quote delivery</div>
+    </div>
+    <div class="email-body">Subject: DWM × [Client] — Production Proposal
+
+Hey [Name],
+
+As discussed, here's the proposal for [project].
+
+[Link to pitch deck / quote template]
+
+Happy to jump on a quick call if you want to talk through anything before confirming.
+
+Cheers,
+Dillon
+Digital Wine Media</div>
+  </div>
+
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-badge d3">DAY 3 — SOFT NUDGE</div>
+      <div class="email-subject">Just checking in</div>
+    </div>
+    <div class="email-body">Subject: Re: DWM × [Client] — Production Proposal
+
+Hey [Name],
+
+Just checking if you had a chance to look over the proposal.
+
+Happy to adjust anything or answer any questions.
+
+Cheers,
+Dillon</div>
+  </div>
+
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-badge d7">DAY 7 — ADD VALUE</div>
+      <div class="email-subject">Relevant work / create interest</div>
+    </div>
+    <div class="email-body">Subject: Something that might be relevant
+
+Hey [Name],
+
+I just wrapped a shoot for [similar client / project type] — came out really well. Thought it might be relevant to what we were discussing.
+
+[Link to work or brief description]
+
+Still keen to make something work for [their project] if the timing is right.
+
+Cheers,
+Dillon</div>
+  </div>
+
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-badge d14">DAY 14 — FINAL CHASE</div>
+      <div class="email-subject">Closing the loop</div>
+    </div>
+    <div class="email-body">Subject: Re: DWM × [Client] — Production Proposal
+
+Hey [Name],
+
+Just closing the loop on this one. My August and September are filling up quickly with [festival / campaign / tour] work, so wanted to give you first refusal on the dates before I move on.
+
+If the timing doesn't work right now, no problem at all — happy to revisit later in the year.
+
+Just let me know either way.
+
+Cheers,
+Dillon</div>
+  </div>
+
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-badge d30">DAY 30 — RE-ENGAGE</div>
+      <div class="email-subject">New angle or seasonal hook</div>
+    </div>
+    <div class="email-body">Subject: [Relevant hook — new work / seasonal / news]
+
+Hey [Name],
+
+Hope things are going well.
+
+I've been shooting a lot of [relevant content type] lately — the results have been really strong. Made me think of [their brand / project] again.
+
+Is there anything coming up in [next quarter / upcoming campaign] where video content would be useful?
+
+Happy to put something together.
+
+Cheers,
+Dillon
+Digital Wine Media</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="card-label" style="margin-bottom:16px;">WhatsApp versions — for warmer leads</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-label">Day 3 WhatsApp</div>
+      <p style="font-size:12px;line-height:1.7;color:var(--dim);">Hey [Name], just checking if you had a chance to look over the proposal. Happy to jump on a call if it's easier. 👋</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Day 7 WhatsApp</div>
+      <p style="font-size:12px;line-height:1.7;color:var(--dim);">Hey [Name], just finished a shoot for [client] — came out really well. Made me think of what we were talking about. Keen to make it work if the timing suits.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Day 14 WhatsApp</div>
+      <p style="font-size:12px;line-height:1.7;color:var(--dim);">Hey [Name], just closing the loop — August is filling up fast. Happy to hold a date if you want to confirm, otherwise no worries at all. Just let me know 🙏</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ WEEKLY BRIEF ═══════════ -->
+<div class="section" id="weekly">
+  <div class="sec-head">
+    <div class="sec-eyebrow">System 03</div>
+    <h2 class="sec-title">Monday<br>Morning Brief</h2>
+    <p class="sec-sub">10 minutes every Monday. Open Claude, paste the prompt, get your week in order. No more flying blind.</p>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:28px;">
+    <div>
+      <div class="card-label" style="margin-bottom:12px;">The master prompt — copy this every Monday</div>
+      <div class="email-block">
+        <div class="email-header">
+          <div class="email-badge d0">MONDAY PROMPT</div>
+          <div class="email-subject">Paste into Claude every Monday morning</div>
+        </div>
+        <div class="email-body" id="mondayPrompt">Run my Monday morning DWM brief. Cover:
+
+1. Revenue this week — invoices raised, what's outstanding, progress toward €200K year target
+2. Shoots confirmed this week — dates, clients, kit needed, crew required
+3. Deliverables due this week — what needs to be edited and delivered
+4. Follow-ups needed — leads gone quiet, pending replies, anyone I should chase
+5. One priority this week — the single most important thing to close or complete
+6. Anything I've missed — based on what you know about my active projects
+
+Keep it punchy. Bullets where possible. No filler.</div>
+      </div>
+      <button class="copy-btn" onclick="copyText('mondayPrompt', this)" style="margin-top:12px;">Copy prompt</button>
+    </div>
+    <div>
+      <div class="card-label" style="margin-bottom:12px;">What each section covers</div>
+      <div class="brief-section">
+        <div class="brief-header"><div class="brief-num">01</div><div class="brief-title">Revenue check</div></div>
+        <div class="brief-body">YTD vs target, invoices raised this week, what's outstanding and overdue. Keeps you on track toward €200K without having to open Xero every day.</div>
+      </div>
+      <div class="brief-section">
+        <div class="brief-header"><div class="brief-num">02</div><div class="brief-title">Shoots this week</div></div>
+        <div class="brief-body">Everything confirmed in the calendar. Kit to pack, crew to brief, logistics to confirm. No more showing up unprepared.</div>
+      </div>
+      <div class="brief-section">
+        <div class="brief-header"><div class="brief-num">03</div><div class="brief-title">Edit queue</div></div>
+        <div class="brief-body">What's sitting in the To Edit pile, what's due this week, what can go to Jack. Keeps deliverables from piling up.</div>
+      </div>
+      <div class="brief-section">
+        <div class="brief-header"><div class="brief-num">04</div><div class="brief-title">Follow-ups</div></div>
+        <div class="brief-body">Leads that have gone quiet, proposals that haven't been responded to, clients waiting on something from you.</div>
+      </div>
+      <div class="brief-section">
+        <div class="brief-header"><div class="brief-num">05</div><div class="brief-title">One priority</div></div>
+        <div class="brief-body">The single most important thing to close this week. Not a list of ten. One thing. Forces focus.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="card-label" style="margin-bottom:16px;">Additional quick prompts</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-label">Revenue check</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);margin-bottom:12px;">How am I tracking toward €200K this year? What do I need to earn per month for the rest of the year to hit it?</p>
+      <button class="copy-btn" onclick="copyDirect('How am I tracking toward €200K this year? What do I need to earn per month for the rest of the year to hit it? Base it on my current YTD revenue and upcoming confirmed projects.', this)">Copy ↗</button>
+    </div>
+    <div class="card">
+      <div class="card-label">Invoice chase</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);margin-bottom:12px;">Who owes me money right now? Draft a polite but firm chase message for any invoice over 14 days outstanding.</p>
+      <button class="copy-btn" onclick="copyDirect('Who owes me money right now based on my outstanding invoices? Draft a polite but firm WhatsApp chase for any invoice that is over 14 days outstanding.', this)">Copy ↗</button>
+    </div>
+    <div class="card">
+      <div class="card-label">Shoot prep</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);margin-bottom:12px;">Build me a one-page shoot prep document for [shoot name] — shot list, call time, kit, crew, logistics.</p>
+      <button class="copy-btn" onclick="copyDirect('Build me a one-page shoot prep document for my next upcoming shoot. Include: shot list priorities, call time, location details, kit list, crew briefing notes, and any client-specific requirements I should know.', this)">Copy ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CONTENT PIPELINE ═══════════ -->
+<div class="section" id="content">
+  <div class="sec-head">
+    <div class="sec-eyebrow">System 04</div>
+    <h2 class="sec-title">Content<br>Pipeline</h2>
+    <p class="sec-sub">Every shoot feeds your socials automatically. One brain dump after a shoot generates a week of content. Here's the formula.</p>
+  </div>
+
+  <div class="card-label" style="margin-bottom:16px;">The core formula — after every shoot</div>
+
+  <div style="margin-bottom:28px;">
+    <div class="formula-row">
+      <div class="formula-input"><div class="label">INPUT</div><div class="val">Brain dump about the shoot — what happened, who was there, what was the energy</div></div>
+      <div class="arrow">→</div>
+      <div class="formula-output"><div class="label">OUTPUT</div><div class="val">5 Instagram captions, 3 TikTok hooks, 1 YouTube script outline</div></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:28px;">
+    <div>
+      <div class="card-label" style="margin-bottom:12px;">Post-shoot content prompt</div>
+      <div class="email-block">
+        <div class="email-header">
+          <div class="email-badge d0">AFTER EVERY SHOOT</div>
+          <div class="email-subject">Paste after your brain dump</div>
+        </div>
+        <div class="email-body" id="contentPrompt">Based on that shoot, generate:
+
+1. Five Instagram captions — short, punchy, in my voice. No corporate language. No hashtag spam. One or two max per caption. Vary the angles (behind the scenes, creative take, client praise, culture, personal reflection).
+
+2. Three TikTok hooks — opening lines that stop the scroll. Under 8 words each. Statement, question, or provocative take.
+
+3. One YouTube script outline — structure for a 3-5 minute behind the scenes video. Intro hook, three main beats, CTA at the end.
+
+My voice: direct, no filler, edgy, music-driven, premium but not corporate. Think festival aftermovie meets documentary filmmaker.</div>
+      </div>
+      <button class="copy-btn" onclick="copyText('contentPrompt', this)" style="margin-top:12px;">Copy prompt</button>
+    </div>
+    <div>
+      <div class="card-label" style="margin-bottom:12px;">Weekly content calendar</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">MONDAY</div>
+          <div class="tl-title">Plan the week</div>
+          <div class="tl-desc">Pick 3 pieces of content to post this week. Pull from the post-shoot library or generate new from recent brain dumps.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">TUESDAY / THURSDAY</div>
+          <div class="tl-title">Post Instagram reels</div>
+          <div class="tl-desc">Two reels per week minimum. Shoot content, behind the scenes, or client work. Caption from the library.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">WEDNESDAY</div>
+          <div class="tl-title">TikTok — talking head or hook</div>
+          <div class="tl-desc">Record direct to camera using one of the TikTok hooks generated post-shoot. 30-60 seconds. No editing required.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">FRIDAY</div>
+          <div class="tl-title">Authority post</div>
+          <div class="tl-desc">A lesson learned, a behind the scenes thought, a hot take on the industry. Builds credibility beyond the work itself.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot blood"></div>
+          <div class="tl-date">MONTHLY</div>
+          <div class="tl-title">YouTube upload</div>
+          <div class="tl-desc">One behind the scenes video per month. Shot on the day, scripted from the post-shoot prompt, edited simply.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="card-label" style="margin-bottom:16px;">Content type library — prompts for each format</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-label">Instagram caption — work post</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);margin-bottom:10px;">Write me an Instagram caption for a reel of [shoot/client]. Punchy, no filler. My voice: direct, edgy, music-driven. Max 3 lines. End with one or two relevant hashtags only.</p>
+      <button class="copy-btn" onclick="copyDirect('Write me an Instagram caption for a reel of [shoot/client]. Punchy, no filler. My voice: direct, edgy, music-driven. Max 3 lines. End with one or two relevant hashtags only.', this)">Copy ↗</button>
+    </div>
+    <div class="card">
+      <div class="card-label">TikTok hook generator</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);margin-bottom:10px;">Give me 5 TikTok opening hooks for a video about [topic/shoot]. Under 8 words each. Scroll-stopping. Direct. My voice is confident, not cringe. No emojis in the hook.</p>
+      <button class="copy-btn" onclick="copyDirect('Give me 5 TikTok opening hooks for a video about [topic/shoot]. Under 8 words each. Scroll-stopping. Direct. My voice is confident, not cringe. No emojis in the hook.', this)">Copy ↗</button>
+    </div>
+    <div class="card">
+      <div class="card-label">YouTube BTS script</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);margin-bottom:10px;">Write a YouTube script for a 4-minute behind the scenes video about [shoot]. Hook: [hook]. Cover: the brief, what we shot, the challenge, the outcome. End with a CTA to get in touch.</p>
+      <button class="copy-btn" onclick="copyDirect('Write a YouTube script for a 4-minute behind the scenes video about [shoot]. Hook: [hook]. Cover: the brief, what we shot, the challenge, the outcome. End with a CTA to get in touch for similar work.', this)">Copy ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ NOTION ═══════════ -->
+<div class="section" id="notion">
+  <div class="sec-head">
+    <div class="sec-eyebrow">System 05</div>
+    <h2 class="sec-title">Notion<br>Setup</h2>
+    <p class="sec-sub">Your entire business pipeline in one place. Projects, clients, edit queue, invoices. Here's exactly how to structure it.</p>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:28px;">
+    <div>
+      <div class="card-label" style="margin-bottom:12px;">Database structure</div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-label">Projects database — columns</div>
+        <table class="notion-table" style="margin-top:4px;">
+          <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Project name</td><td>Title</td><td>Client × Project</td></tr>
+            <tr><td>Client</td><td>Relation</td><td>Links to Clients DB</td></tr>
+            <tr><td>Shoot date</td><td>Date</td><td>Actual shoot day</td></tr>
+            <tr><td>Delivery date</td><td>Date</td><td>When files are due</td></tr>
+            <tr><td>Status</td><td>Select</td><td>See stages below</td></tr>
+            <tr><td>Invoice status</td><td>Select</td><td>Deposit / Paid / Overdue</td></tr>
+            <tr><td>Value</td><td>Number</td><td>Total project fee</td></tr>
+            <tr><td>Deliverables</td><td>Multi-select</td><td>Hero / Reels / BTS etc</td></tr>
+            <tr><td>Dropbox link</td><td>URL</td><td>Final files location</td></tr>
+            <tr><td>Notes</td><td>Text</td><td>Brief, shot list, client notes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="card-label" style="margin-bottom:12px;">Pipeline stages</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#000;border:1px solid var(--line);">
+          <div class="status new">LEAD</div>
+          <div style="font-size:12px;color:var(--dim);">Enquiry received, quote not yet sent</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#000;border:1px solid var(--line);">
+          <div class="status edit">QUOTED</div>
+          <div style="font-size:12px;color:var(--dim);">Proposal or quote sent, awaiting response</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#000;border:1px solid var(--line);">
+          <div class="status active">CONFIRMED</div>
+          <div style="font-size:12px;color:var(--dim);">Deposit paid, date locked</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#000;border:1px solid var(--line);">
+          <div class="status edit">TO SHOOT</div>
+          <div style="font-size:12px;color:var(--dim);">Shoot date upcoming, prep in progress</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#000;border:1px solid var(--line);">
+          <div class="status edit">TO EDIT</div>
+          <div style="font-size:12px;color:var(--dim);">Footage captured, edit queue</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#000;border:1px solid var(--line);">
+          <div class="status edit">IN REVIEW</div>
+          <div style="font-size:12px;color:var(--dim);">Delivered to client, awaiting feedback</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#000;border:1px solid var(--line);">
+          <div class="status done">COMPLETE</div>
+          <div style="font-size:12px;color:var(--dim);">Approved, invoice paid, archived</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="card-label" style="margin-bottom:16px;">Views to create in Notion</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-label">Board view — Active pipeline</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);">Group by Status. Shows every project moving through the pipeline at a glance. Filter out Complete. This is your main daily view.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Table view — Edit queue</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);">Filter: Status = To Edit. Sort by Delivery Date. This is what you or Jack opens every morning to know what to work on.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Calendar view — Shoot dates</div>
+      <p style="font-size:12px;line-height:1.65;color:var(--dim);">Group by Shoot Date. Instant visual of how busy the month is. Flag any two shoots on the same day before they conflict.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  event.currentTarget.classList.add('on');
+}
+
+function copyText(id, btn){
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='Copied ✓';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy prompt';btn.classList.remove('copied');},2000);
+  });
+}
+
+function copyDirect(text, btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='Copied ✓';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy ↗';btn.classList.remove('copied');},2000);
+  });
+}
+</script>
+</body>
+</html>

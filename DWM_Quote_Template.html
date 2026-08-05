@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DWM — Quote</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+:root{
+  --ink:#0c0c0c;--void:#000;--acid:#d7ff3d;--blood:#ff3b30;
+  --cream:#ede7d9;--cream-dim:#d9d2c0;--mid:#1a1a1a;--dark:#111;
+  --line:rgba(237,231,217,0.1);
+  --display:'Archivo Black',sans-serif;
+  --mono:'Space Mono',monospace;
+  --body:'Inter',sans-serif;
+}
+#deck{position:fixed;inset:0;overflow:hidden;}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,5vw,64px);background:var(--ink);opacity:0;pointer-events:none;z-index:1;}
+.slide.active{opacity:1;pointer-events:all;z-index:10;}
+
+.grain{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0.05;background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4t5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGTk5OXl5eZmZmlpaWsiIAAAAGjSURBVEjH7ZZJDoMwDEUDmMGEee7/oK2hFARJFxWV8FYv0pP/YlscY4wxXiE5RJ07l0pS4B0CPRTgnDOEEJqWgXPOuSmlIYQQWmvrnGutJaW0iIiIiIiIiIiIiIiIiIiIiIiIqPMBCxABCxABCxABCxABCxABCxABCxABCxABCxABCxABCxD5f2CPFXwHTkBvE8FVFDEHRVhSIiIiIiIiIiJqVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==");background-size:64px 64px;}
+.scanlines{position:fixed;inset:0;z-index:8998;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.06) 0,rgba(0,0,0,0.06) 1px,transparent 1px,transparent 4px);}
+.frame{position:fixed;inset:10px;z-index:8999;pointer-events:none;border:1px solid rgba(237,231,217,0.07);}
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--acid);z-index:9999;transition:width .5s cubic-bezier(.16,.84,.44,1);}
+#nav{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:9999;display:flex;flex-direction:column;gap:9px;}
+#nav span{width:5px;height:5px;border-radius:50%;background:rgba(237,231,217,0.2);cursor:pointer;transition:all .3s;display:block;}
+#nav span.on{background:var(--blood);transform:scale(2);}
+#count{position:fixed;bottom:20px;right:clamp(20px,4vw,48px);font-family:var(--mono);font-size:10px;color:rgba(237,231,217,0.28);z-index:9999;letter-spacing:.12em;}
+#slide-label{position:fixed;bottom:20px;left:clamp(28px,5vw,64px);font-family:var(--mono);font-size:10px;color:rgba(237,231,217,0.25);z-index:9999;letter-spacing:.14em;text-transform:uppercase;}
+.scan-flash{position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,var(--acid),transparent);z-index:9990;pointer-events:none;opacity:0;}
+.scan-flash.run{animation:scanFlash .45s ease-out forwards;opacity:1;}
+
+@keyframes scanFlash{0%{transform:translateY(-100%);}100%{transform:translateY(100vh);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:translateY(0);}}
+@keyframes glitch{0%{clip-path:inset(0 0 100% 0);transform:translate(0);}10%{clip-path:inset(8% 0 62% 0);transform:translate(-4px,0);}20%{clip-path:inset(58% 0 8% 0);transform:translate(4px,0);}30%,100%{clip-path:inset(0 0 0 0);transform:translate(0);}}
+@keyframes glitch2{0%{clip-path:inset(0 0 100% 0);}5%{clip-path:inset(62% 0 18% 0);transform:translate(6px,0);}15%{clip-path:inset(18% 0 52% 0);transform:translate(-6px,0);}25%,100%{clip-path:inset(0 0 0 0);transform:translate(0);}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+@keyframes countUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.slide.active .anim{animation:fadeUp .62s cubic-bezier(.16,.84,.44,1) both;}
+.slide.active .d1{animation-delay:.06s;}.slide.active .d2{animation-delay:.13s;}
+.slide.active .d3{animation-delay:.20s;}.slide.active .d4{animation-delay:.27s;}
+.slide.active .d5{animation-delay:.34s;}.slide.active .d6{animation-delay:.41s;}
+.slide.active .d7{animation-delay:.48s;}.slide.active .d8{animation-delay:.55s;}
+
+.glitch{position:relative;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;font-family:inherit;font-size:inherit;font-weight:inherit;text-transform:inherit;letter-spacing:inherit;line-height:inherit;pointer-events:none;}
+.glitch::before{color:var(--blood);animation:glitch 4s steps(2) infinite;}
+.glitch::after{color:var(--acid);animation:glitch2 4s steps(2) .15s infinite;}
+
+.eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--cream-dim);margin-bottom:16px;}
+.eyebrow::before{content:'';width:20px;height:1px;background:var(--acid);}
+.eyebrow::after{content:'';width:3px;height:3px;border-radius:50%;background:var(--blood);}
+.title{font-family:var(--display);text-transform:uppercase;line-height:.88;letter-spacing:-.02em;color:var(--cream);}
+.t-xl{font-size:clamp(44px,10vw,140px);}
+.t-lg{font-size:clamp(32px,6.5vw,88px);}
+.t-md{font-size:clamp(24px,4vw,54px);}
+.accent{color:var(--acid);}
+.body{font-family:var(--body);font-size:clamp(12px,1.3vw,15px);line-height:1.7;color:var(--cream-dim);}
+.mono{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--cream-dim);}
+.rule{height:1px;background:var(--line);margin:18px 0;}
+.acid-line{height:2px;background:var(--acid);width:36px;margin:12px 0;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(22px,4vw,52px);align-items:start;}
+.live-badge{display:inline-flex;align-items:center;gap:7px;background:var(--blood);color:var(--cream);font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 10px;text-transform:uppercase;margin-bottom:14px;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--cream);animation:blink 1.2s infinite;}
+.pill{display:inline-block;border:1px solid rgba(237,231,217,0.18);padding:4px 13px;border-radius:100px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--cream-dim);margin:3px 2px 0 0;}
+.card{background:var(--mid);padding:22px 18px;border:1px solid var(--line);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--acid);transition:height .4s;}
+.card:hover::before{height:100%;}
+.card-label{font-family:var(--mono);font-size:9px;color:var(--acid);margin-bottom:10px;letter-spacing:.1em;}
+
+/* QUOTE TABLE */
+.q-table{width:100%;border-collapse:collapse;}
+.q-table thead tr{border-bottom:1px solid rgba(215,255,61,0.3);}
+.q-table th{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--acid);text-align:left;padding:10px 0;font-weight:400;}
+.q-table th:last-child{text-align:right;}
+.q-table tbody tr{border-bottom:1px solid rgba(237,231,217,0.06);transition:background .2s;}
+.q-table tbody tr:hover{background:rgba(237,231,217,0.03);}
+.q-table td{font-family:var(--body);font-size:clamp(11px,1.2vw,13px);color:var(--cream-dim);padding:13px 0;vertical-align:top;}
+.q-table td:first-child{color:var(--cream);font-weight:500;width:42%;}
+.q-table td:nth-child(2){font-family:var(--mono);font-size:9px;color:rgba(237,231,217,0.4);padding-right:16px;}
+.q-table td:last-child{text-align:right;color:var(--cream);font-family:var(--mono);font-size:clamp(11px,1.2vw,13px);white-space:nowrap;}
+.q-table tfoot tr{border-top:1px solid var(--acid);}
+.q-table tfoot td{padding:14px 0;font-family:var(--display);font-size:clamp(18px,2.5vw,28px);color:var(--acid);text-transform:uppercase;}
+.q-table tfoot td:last-child{text-align:right;color:var(--acid);}
+.q-table tr.addon td{color:rgba(237,231,217,0.45);}
+.q-table tr.addon td:first-child{color:rgba(237,231,217,0.55);}
+.q-table tr.addon td:last-child{color:rgba(215,255,61,0.5);}
+
+/* ADD-ON DIVIDER */
+.addon-label{font-family:var(--mono);font-size:9px;color:rgba(237,231,217,0.3);letter-spacing:.14em;padding:10px 0 6px;display:block;}
+
+/* TERMS BLOCK */
+.term-row{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
+.term-row:last-child{border-bottom:none;}
+.term-key{font-family:var(--mono);font-size:9px;color:var(--acid);letter-spacing:.1em;min-width:120px;padding-top:1px;}
+.term-val{font-family:var(--body);font-size:12px;color:var(--cream-dim);line-height:1.55;}
+
+/* EDITABLE */
+[contenteditable]{outline:none;cursor:text;}
+[contenteditable]:hover{background:rgba(215,255,61,0.04);}
+[contenteditable]:focus{background:rgba(215,255,61,0.07);outline:1px dashed rgba(215,255,61,0.3);}
+.editable-hint{position:fixed;bottom:42px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:rgba(215,255,61,0.3);letter-spacing:.12em;z-index:9999;pointer-events:none;white-space:nowrap;}
+
+/* TOTAL ANIMATE */
+.total-figure{
+  font-family:var(--display);font-size:clamp(52px,10vw,130px);
+  color:var(--acid);line-height:.88;letter-spacing:-.02em;
+  text-transform:uppercase;
+}
+
+@media(max-width:680px){
+  .two-col{grid-template-columns:1fr;}
+  .q-table td:nth-child(2){display:none;}
+  #nav{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  .glitch::before,.glitch::after{display:none;}
+  .slide.active .anim{animation:none;opacity:1;}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="scanlines"></div>
+<div class="frame"></div>
+<div id="progress"></div>
+<div id="nav"></div>
+<div id="count"></div>
+<div id="slide-label"></div>
+<div class="scan-flash" id="scanFlash"></div>
+<div class="editable-hint">CLICK ANY WHITE TEXT TO EDIT</div>
+
+<div id="deck">
+
+<!-- ══ SLIDE 0 — COVER ══════════════════════════════════════════════════════ -->
+<div class="slide active" id="s0" data-label="QUOTE COVER">
+  <div style="position:absolute;top:clamp(20px,3vw,38px);left:clamp(28px,5vw,64px);" class="anim">
+    <div class="mono" style="font-size:12px;">DIGITAL <span style="color:var(--acid);">WINE</span> MEDIA</div>
+  </div>
+  <div style="position:absolute;top:clamp(20px,3vw,38px);right:clamp(20px,3vw,40px);" class="anim d1">
+    <svg width="44" height="44" viewBox="0 0 56 56" fill="none">
+      <rect x="10" y="0" width="9" height="5" fill="#0c0c0c"/><rect x="37" y="0" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="10" y="51" width="9" height="5" fill="#0c0c0c"/><rect x="37" y="51" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="5" y="5" width="12" height="1.5" fill="#d7ff3d"/><rect x="5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="5" width="12" height="1.5" fill="#d7ff3d"/><rect x="49.5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="5" y="49.5" width="12" height="1.5" fill="#d7ff3d"/><rect x="5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="49.5" width="12" height="1.5" fill="#d7ff3d"/><rect x="49.5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <circle cx="28" cy="28" r="2.5" fill="#ff3b30"/>
+      <text x="28" y="23" text-anchor="middle" fill="#d7ff3d" font-family="'Arial Black',sans-serif" font-size="9" font-weight="900" letter-spacing="1">DWM</text>
+    </svg>
+  </div>
+
+  <div>
+    <div class="live-badge anim d1"><span class="live-dot"></span>PRODUCTION QUOTE</div>
+    <h1 class="title t-xl glitch anim d2" data-text="QUOTE FOR" style="color:rgba(237,231,217,0.18);">QUOTE FOR</h1>
+    <h1 class="title t-xl anim d3" style="color:var(--acid);" contenteditable spellcheck="false">[CLIENT]</h1>
+    <div class="rule anim d4" style="max-width:380px;"></div>
+    <div class="anim d4" style="display:grid;grid-template-columns:repeat(3,auto);gap:32px;max-width:480px;margin-top:8px;">
+      <div>
+        <div class="mono" style="margin-bottom:5px;">PROJECT</div>
+        <div style="font-family:var(--body);font-size:13px;color:var(--cream);" contenteditable spellcheck="false">[Project name]</div>
+      </div>
+      <div>
+        <div class="mono" style="margin-bottom:5px;">DATE</div>
+        <div style="font-family:var(--body);font-size:13px;color:var(--cream);" contenteditable spellcheck="false">[Date]</div>
+      </div>
+      <div>
+        <div class="mono" style="margin-bottom:5px;">REF</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--acid);" contenteditable spellcheck="false">DWM-Q-001</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:clamp(20px,3vw,36px);left:clamp(28px,5vw,64px);right:clamp(28px,5vw,64px);display:flex;justify-content:space-between;align-items:center;" class="anim d5">
+    <span class="mono">PREPARED BY DILLON WARD · DIGITAL WINE MEDIA</span>
+    <span class="mono" style="color:var(--acid);">VALID 30 DAYS →</span>
+  </div>
+</div>
+
+<!-- ══ SLIDE 1 — SCOPE ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s1" data-label="SCOPE">
+  <div class="eyebrow anim">01 — SCOPE OF WORK</div>
+  <h2 class="title t-md anim d1">THE <span class="accent">BRIEF.</span></h2>
+  <div class="rule anim d2"></div>
+  <div class="two-col" style="margin-top:18px;">
+    <div>
+      <div class="card anim d3" style="margin-bottom:14px;">
+        <div class="card-label">PROJECT OVERVIEW</div>
+        <p style="font-family:var(--body);font-size:12.5px;line-height:1.65;color:var(--cream);" contenteditable spellcheck="false">Describe the project here in 2–3 sentences. What is being shot, when, where, and what is the output? Keep it factual and specific.</p>
+      </div>
+      <div class="card anim d4">
+        <div class="card-label">SHOOT DETAILS</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+          <div><div class="mono" style="margin-bottom:4px;font-size:8px;">DATE</div><div style="font-family:var(--body);font-size:12px;color:var(--cream);" contenteditable spellcheck="false">[Shoot date]</div></div>
+          <div><div class="mono" style="margin-bottom:4px;font-size:8px;">LOCATION</div><div style="font-family:var(--body);font-size:12px;color:var(--cream);" contenteditable spellcheck="false">[Location]</div></div>
+          <div><div class="mono" style="margin-bottom:4px;font-size:8px;">DURATION</div><div style="font-family:var(--body);font-size:12px;color:var(--cream);" contenteditable spellcheck="false">[Full day / Half day]</div></div>
+          <div><div class="mono" style="margin-bottom:4px;font-size:8px;">CAMERA</div><div style="font-family:var(--body);font-size:12px;color:var(--cream);">Sony FX3 / A7SIII</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="mono anim d3" style="color:var(--acid);margin-bottom:12px;">DELIVERABLES INCLUDED</div>
+      <div class="anim d4">
+        <div class="term-row" style="border-top:1px solid var(--line);">
+          <span class="term-key">DELIVERABLE 1</span>
+          <span class="term-val" contenteditable spellcheck="false">Hero edit — 60–90 sec recap reel, 16:9 and 9:16 vertical cut</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">DELIVERABLE 2</span>
+          <span class="term-val" contenteditable spellcheck="false">Social reels — 3 × 15–30 sec platform-ready cuts, captioned</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">DELIVERABLE 3</span>
+          <span class="term-val" contenteditable spellcheck="false">Behind the scenes content — raw selects for stories / organic posts</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">DELIVERY</span>
+          <span class="term-val" contenteditable spellcheck="false">Dropbox link within 5–7 working days of shoot. One revision round included.</span>
+        </div>
+        <div class="term-row" style="border-bottom:none;">
+          <span class="term-key">ADD-ONS</span>
+          <span class="term-val" style="color:rgba(237,231,217,0.4);" contenteditable spellcheck="false">Rush delivery (+€200). Additional reels (€150 each). Raw footage licence (on request).</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2 — PRICING ═════════════════════════════════════════════════════ -->
+<div class="slide" id="s2" data-label="PRICING">
+  <div class="eyebrow anim">02 — PRICING</div>
+  <h2 class="title t-md anim d1">WHAT IT <span class="accent">COSTS.</span></h2>
+  <div class="rule anim d2"></div>
+  <div class="two-col" style="margin-top:18px;align-items:start;">
+    <div class="anim d3">
+      <table class="q-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Detail</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable spellcheck="false">Shoot day — primary operator</td>
+            <td contenteditable spellcheck="false">Dillon Ward / Full day</td>
+            <td contenteditable spellcheck="false">€1,100</td>
+          </tr>
+          <tr>
+            <td contenteditable spellcheck="false">Hero edit — 60–90 sec</td>
+            <td contenteditable spellcheck="false">16:9 + 9:16 included</td>
+            <td contenteditable spellcheck="false">€700</td>
+          </tr>
+          <tr>
+            <td contenteditable spellcheck="false">Social reels × 3</td>
+            <td contenteditable spellcheck="false">15–30 sec, captioned</td>
+            <td contenteditable spellcheck="false">€450</td>
+          </tr>
+          <tr>
+            <td contenteditable spellcheck="false">Colour grade & sound design</td>
+            <td contenteditable spellcheck="false">Included in edit fee</td>
+            <td contenteditable spellcheck="false">—</td>
+          </tr>
+          <tr class="addon">
+            <td><span class="addon-label">OPTIONAL ADD-ONS</span></td>
+            <td></td><td></td>
+          </tr>
+          <tr class="addon">
+            <td contenteditable spellcheck="false">Second camera operator</td>
+            <td contenteditable spellcheck="false">Full day rate</td>
+            <td contenteditable spellcheck="false">+€400</td>
+          </tr>
+          <tr class="addon">
+            <td contenteditable spellcheck="false">Rush delivery</td>
+            <td contenteditable spellcheck="false">Within 48 hrs of shoot</td>
+            <td contenteditable spellcheck="false">+€200</td>
+          </tr>
+          <tr class="addon">
+            <td contenteditable spellcheck="false">Raw footage licence</td>
+            <td contenteditable spellcheck="false">Full usage / buyout</td>
+            <td contenteditable spellcheck="false">+€[TBD]</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>TOTAL</td>
+            <td></td>
+            <td contenteditable spellcheck="false">€2,250</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div style="margin-top:12px;" class="anim d5">
+        <span class="mono" style="font-size:9px;">+ VAT at 13.5% where applicable on commissioned camera work</span>
+      </div>
+    </div>
+    <div>
+      <div class="anim d4" style="margin-bottom:14px;">
+        <div class="mono" style="color:var(--acid);margin-bottom:10px;">TOTAL PROJECT COST</div>
+        <div class="total-figure" contenteditable spellcheck="false">€2,250</div>
+        <div class="mono" style="margin-top:8px;">EX. VAT · EX. TRAVEL</div>
+      </div>
+      <div class="card anim d5">
+        <div class="card-label">PAYMENT TERMS</div>
+        <div class="term-row" style="border-top:1px solid var(--line);padding-top:10px;">
+          <span class="term-key">DEPOSIT</span>
+          <span class="term-val">50% on confirmation to secure the date.</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">BALANCE</span>
+          <span class="term-val">Remaining 50% on final delivery.</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">TRAVEL</span>
+          <span class="term-val">Billed at cost. Mileage at €0.40/km.</span>
+        </div>
+        <div class="term-row" style="border-bottom:none;">
+          <span class="term-key">VALID</span>
+          <span class="term-val" contenteditable spellcheck="false">30 days from date of issue.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3 — TERMS ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s3" data-label="TERMS">
+  <div class="eyebrow anim">03 — TERMS & CONDITIONS</div>
+  <h2 class="title t-md anim d1">HOW IT <span class="accent">WORKS.</span></h2>
+  <div class="rule anim d2"></div>
+  <div class="two-col" style="margin-top:20px;">
+    <div class="anim d3">
+      <div class="term-row" style="border-top:1px solid var(--line);">
+        <span class="term-key">BOOKING</span>
+        <span class="term-val">50% deposit required to confirm date. Date is not held without deposit.</span>
+      </div>
+      <div class="term-row">
+        <span class="term-key">REVISIONS</span>
+        <span class="term-val">One round of revisions included per deliverable. Additional rounds at €150 per round.</span>
+      </div>
+      <div class="term-row">
+        <span class="term-key">FEEDBACK</span>
+        <span class="term-val">72-hour feedback window from delivery. Silence after 72 hours is taken as approval.</span>
+      </div>
+      <div class="term-row">
+        <span class="term-key">CANCELLATION</span>
+        <span class="term-val">Deposit non-refundable within 7 days of shoot date. Deposit held as credit if rescheduled with 14+ days notice.</span>
+      </div>
+      <div class="term-row">
+        <span class="term-key">TRAVEL</span>
+        <span class="term-val">Flights, accommodation and transport billed at cost for locations requiring overnight stays or international travel.</span>
+      </div>
+      <div class="term-row">
+        <span class="term-key">COPYRIGHT</span>
+        <span class="term-val">DWM retains copyright of all footage until final balance is paid. Full licence transfers on cleared payment.</span>
+      </div>
+      <div class="term-row" style="border-bottom:none;">
+        <span class="term-key">USAGE</span>
+        <span class="term-val">Quote covers usage for the client's own channels. Third party licensing, broadcast or commercial usage quoted separately.</span>
+      </div>
+    </div>
+    <div>
+      <div class="card anim d4" style="margin-bottom:14px;background:rgba(215,255,61,0.04);border-color:rgba(215,255,61,0.15);">
+        <div class="card-label" style="color:var(--acid);">TO CONFIRM THIS QUOTE</div>
+        <p style="font-family:var(--body);font-size:12.5px;color:var(--cream);line-height:1.65;">Reply to confirm and we will issue a deposit invoice via Xero. Date is locked once deposit clears. Simple as that.</p>
+      </div>
+      <div class="card anim d5">
+        <div class="card-label">CONTACT</div>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--cream);margin-bottom:6px;">Dillon Ward</p>
+        <a style="font-family:var(--mono);font-size:10px;color:var(--acid);text-decoration:none;" href="mailto:digitalwinemedia@gmail.com">digitalwinemedia@gmail.com</a>
+      </div>
+      <div class="card anim d6" style="margin-top:14px;background:var(--void);border-color:var(--line);">
+        <div class="card-label">PORTFOLIO</div>
+        <p style="font-family:var(--mono);font-size:10px;color:var(--cream-dim);">digitalwinemedia-prog.github.io</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4 — SIGN OFF ════════════════════════════════════════════════════ -->
+<div class="slide" id="s4" data-label="SIGN OFF" style="background:var(--void);">
+  <h2 class="title t-xl glitch anim d1" data-text="LET'S" style="color:rgba(237,231,217,0.15);">LET'S</h2>
+  <h2 class="title t-xl anim d2" style="color:var(--acid);">SHOOT IT.</h2>
+  <div class="rule anim d3" style="max-width:320px;margin:20px 0;"></div>
+  <div class="anim d4">
+    <a style="font-family:var(--mono);font-size:clamp(11px,1.6vw,18px);color:var(--cream);text-decoration:none;border-bottom:1px solid rgba(237,231,217,0.25);padding-bottom:3px;" href="mailto:digitalwinemedia@gmail.com">digitalwinemedia@gmail.com</a>
+  </div>
+  <div class="anim d5" style="margin-top:20px;">
+    <span class="mono">DUBLIN, IRELAND  ·  AVAILABLE WORLDWIDE</span>
+  </div>
+  <div style="position:absolute;bottom:clamp(20px,3vw,36px);left:clamp(28px,5vw,64px);right:clamp(28px,5vw,64px);display:flex;justify-content:space-between;align-items:center;" class="anim d6">
+    <span class="mono">© 2026 DIGITAL WINE MEDIA</span>
+    <span class="mono" style="color:var(--acid);">QUOTE VALID 30 DAYS FROM ISSUE</span>
+  </div>
+  <div style="position:absolute;bottom:clamp(50px,8vh,90px);right:clamp(28px,5vw,64px);opacity:.15;" class="anim d6">
+    <svg width="90" height="90" viewBox="0 0 56 56" fill="none">
+      <rect x="10" y="0" width="9" height="5" fill="#0c0c0c"/><rect x="37" y="0" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="10" y="51" width="9" height="5" fill="#0c0c0c"/><rect x="37" y="51" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="5" y="5" width="12" height="1.5" fill="#d7ff3d"/><rect x="5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="5" width="12" height="1.5" fill="#d7ff3d"/><rect x="49.5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="5" y="49.5" width="12" height="1.5" fill="#d7ff3d"/><rect x="5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="49.5" width="12" height="1.5" fill="#d7ff3d"/><rect x="49.5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <circle cx="28" cy="28" r="2.5" fill="#ff3b30"/>
+      <text x="28" y="23" text-anchor="middle" fill="#d7ff3d" font-family="'Arial Black',sans-serif" font-size="9" font-weight="900" letter-spacing="1">DWM</text>
+    </svg>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+const slides=Array.from(document.querySelectorAll('.slide'));
+const total=slides.length;
+let current=0,transitioning=false;
+const progress=document.getElementById('progress');
+const navEl=document.getElementById('nav');
+const countEl=document.getElementById('count');
+const labelEl=document.getElementById('slide-label');
+const flash=document.getElementById('scanFlash');
+
+slides.forEach((_,i)=>{
+  const s=document.createElement('span');
+  s.addEventListener('click',()=>goto(i));
+  navEl.appendChild(s);
+});
+
+function updateUI(){
+  const dots=navEl.querySelectorAll('span');
+  dots.forEach((d,i)=>d.classList.toggle('on',i===current));
+  progress.style.width=((current/(total-1))*100)+'%';
+  countEl.textContent=String(current+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+  labelEl.textContent=slides[current].dataset.label||'';
+}
+
+function runFlash(cb){
+  flash.classList.remove('run');void flash.offsetWidth;
+  flash.classList.add('run');setTimeout(cb,200);
+}
+
+function goto(n){
+  if(n===current||transitioning)return;
+  transitioning=true;
+  runFlash(()=>{
+    slides[current].classList.remove('active');
+    current=n;
+    slides[current].classList.add('active');
+    const anims=slides[current].querySelectorAll('.anim');
+    anims.forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation='';});
+    updateUI();
+    setTimeout(()=>{transitioning=false;},500);
+  });
+}
+
+function next(){if(current<total-1)goto(current+1);}
+function prev(){if(current>0)goto(current-1);}
+
+document.addEventListener('keydown',e=>{
+  if(document.activeElement.contentEditable==='true')return;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ')next();
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')prev();
+});
+
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)){dx<-40?next():dx>40?prev():null;}
+  else{dy<-40?next():dy>40?prev():null;}
+},{passive:true});
+
+let wt=null;
+document.addEventListener('wheel',e=>{
+  if(document.activeElement.contentEditable==='true')return;
+  e.preventDefault();
+  if(wt)return;
+  wt=setTimeout(()=>{wt=null;},650);
+  e.deltaY>0?next():prev();
+},{passive:false});
+
+updateUI();
+})();
+</script>
+</body>
+</html>

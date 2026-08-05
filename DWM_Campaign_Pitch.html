@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DWM — Campaign Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+:root{
+  --ink:#0c0c0c;--void:#000;--acid:#d7ff3d;--blood:#ff3b30;
+  --cream:#ede7d9;--cream-dim:#d9d2c0;--mid:#1a1a1a;--dark:#111;
+  --line:rgba(237,231,217,0.1);
+  --display:'Archivo Black',sans-serif;
+  --mono:'Space Mono',monospace;
+  --body:'Inter',sans-serif;
+}
+#deck{position:fixed;inset:0;overflow:hidden;}
+
+/* SLIDES */
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,5vw,64px);background:var(--ink);opacity:0;pointer-events:none;transition:opacity 0s;z-index:1;}
+.slide.active{opacity:1;pointer-events:all;z-index:10;}
+
+/* OVERLAYS */
+.grain{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0.05;background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4t5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGTk5OXl5eZmZmlpaWsiIAAAAGjSURBVEjH7ZZJDoMwDEUDmMGEee7/oK2hFARJFxWV8FYv0pP/YlscY4wxXiE5RJ07l0pS4B0CPRTgnDOEEJqWgXPOuSmlIYQQWmvrnGutJaW0iIiIiIiIiIiIiIiIiIiIiIiIqPMBCxABCxABCxABCxABCxABCxABCxABCxABCxABCxABCxD5f2CPFXwHTkBvE8FVFDEHRVhSIiIiIiIiIiJqVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==");background-size:64px 64px;}
+.scanlines{position:fixed;inset:0;z-index:8998;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.06) 0,rgba(0,0,0,0.06) 1px,transparent 1px,transparent 4px);}
+.frame{position:fixed;inset:10px;z-index:8999;pointer-events:none;border:1px solid rgba(237,231,217,0.07);}
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--acid);z-index:9999;transition:width .6s cubic-bezier(.16,.84,.44,1);}
+#nav{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:9999;display:flex;flex-direction:column;gap:9px;}
+#nav span{width:5px;height:5px;border-radius:50%;background:rgba(237,231,217,0.2);cursor:pointer;transition:all .3s;display:block;}
+#nav span.on{background:var(--blood);transform:scale(2);}
+#count{position:fixed;bottom:20px;right:clamp(20px,4vw,48px);font-family:var(--mono);font-size:10px;color:rgba(237,231,217,0.28);z-index:9999;letter-spacing:.12em;}
+.scan-flash{position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,var(--acid),transparent);z-index:9990;pointer-events:none;opacity:0;}
+.scan-flash.run{animation:scanFlash .45s ease-out forwards;opacity:1;}
+#slide-label{position:fixed;bottom:20px;left:clamp(28px,5vw,64px);font-family:var(--mono);font-size:10px;color:rgba(237,231,217,0.25);z-index:9999;letter-spacing:.14em;text-transform:uppercase;}
+
+/* ANIMS */
+@keyframes scanFlash{0%{transform:translateY(-100%);}100%{transform:translateY(100vh);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+@keyframes glitch{0%{clip-path:inset(0 0 100% 0);transform:translate(0);}10%{clip-path:inset(8% 0 62% 0);transform:translate(-4px,0);}20%{clip-path:inset(58% 0 8% 0);transform:translate(4px,0);}30%,100%{clip-path:inset(0 0 0 0);transform:translate(0);}}
+@keyframes glitch2{0%{clip-path:inset(0 0 100% 0);}5%{clip-path:inset(62% 0 18% 0);transform:translate(6px,0);}15%{clip-path:inset(18% 0 52% 0);transform:translate(-6px,0);}25%,100%{clip-path:inset(0 0 0 0);transform:translate(0);}}
+@keyframes flicker{0%,92%,100%{opacity:1;}93%{opacity:.35;}95%{opacity:1;}97%{opacity:.15;}99%{opacity:1;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+@keyframes barGrow{from{width:0;}to{width:100%;}}
+
+.slide.active .anim{animation:fadeUp .65s cubic-bezier(.16,.84,.44,1) both;}
+.slide.active .d1{animation-delay:.06s;}.slide.active .d2{animation-delay:.14s;}
+.slide.active .d3{animation-delay:.22s;}.slide.active .d4{animation-delay:.30s;}
+.slide.active .d5{animation-delay:.38s;}.slide.active .d6{animation-delay:.46s;}
+.slide.active .d7{animation-delay:.54s;}
+
+.glitch{position:relative;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;font-family:inherit;font-size:inherit;font-weight:inherit;text-transform:inherit;letter-spacing:inherit;line-height:inherit;pointer-events:none;}
+.glitch::before{color:var(--blood);animation:glitch 4s steps(2) infinite;}
+.glitch::after{color:var(--acid);animation:glitch2 4s steps(2) .15s infinite;}
+
+/* TYPE */
+.eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--cream-dim);margin-bottom:16px;}
+.eyebrow::before{content:'';width:20px;height:1px;background:var(--acid);}
+.eyebrow::after{content:'';width:3px;height:3px;border-radius:50%;background:var(--blood);}
+.title{font-family:var(--display);text-transform:uppercase;line-height:.88;letter-spacing:-.02em;color:var(--cream);}
+.t-xl{font-size:clamp(48px,11vw,160px);}
+.t-lg{font-size:clamp(36px,7.5vw,100px);}
+.t-md{font-size:clamp(26px,4.5vw,60px);}
+.t-sm{font-size:clamp(20px,3vw,38px);}
+.accent{color:var(--acid);}
+.body{font-family:var(--body);font-size:clamp(12px,1.3vw,15px);line-height:1.7;color:var(--cream-dim);}
+.mono{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--cream-dim);}
+.rule{height:1px;background:var(--line);margin:20px 0;}
+.acid-line{height:2px;background:var(--acid);width:36px;margin:14px 0;}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,56px);align-items:start;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.pill{display:inline-block;border:1px solid rgba(237,231,217,0.18);padding:4px 13px;border-radius:100px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--cream-dim);margin:3px 2px 0 0;}
+
+/* CARDS */
+.card{background:var(--mid);padding:24px 20px;border:1px solid var(--line);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--acid);transition:height .4s;}
+.card:hover::before{height:100%;}
+.card-num{font-family:var(--mono);font-size:9px;color:var(--acid);margin-bottom:12px;}
+.card h3{font-family:var(--display);font-size:18px;text-transform:uppercase;color:var(--cream);margin-bottom:8px;}
+.card p{font-family:var(--body);font-size:11.5px;line-height:1.6;color:var(--cream-dim);}
+
+/* TIMELINE */
+.tl-row{display:grid;grid-template-columns:120px 1fr;gap:0;position:relative;}
+.tl-row+.tl-row{margin-top:0;}
+.tl-date{font-family:var(--mono);font-size:9px;color:var(--acid);padding:18px 16px 18px 0;border-right:1px solid var(--line);text-align:right;letter-spacing:.08em;}
+.tl-content{padding:14px 0 14px 24px;border-bottom:1px solid var(--line);}
+.tl-content h4{font-family:var(--display);font-size:16px;text-transform:uppercase;color:var(--cream);margin-bottom:4px;}
+.tl-content p{font-family:var(--body);font-size:11px;line-height:1.55;color:var(--cream-dim);}
+.tl-dot{position:absolute;left:120px;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:var(--acid);border:2px solid var(--ink);}
+
+/* DELIVERABLE LIST */
+.del-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);}
+.del-row:last-child{border-bottom:none;}
+.del-label{font-family:var(--body);font-size:13px;color:var(--cream);}
+.del-tag{font-family:var(--mono);font-size:9px;color:var(--acid);background:rgba(215,255,61,0.08);padding:3px 10px;}
+
+/* CONCEPT HERO */
+.concept-block{background:var(--mid);padding:28px 24px;border-left:3px solid var(--acid);margin-bottom:20px;}
+.concept-block .label{font-family:var(--mono);font-size:9px;color:var(--acid);letter-spacing:.12em;margin-bottom:8px;}
+.concept-block h3{font-family:var(--display);font-size:clamp(20px,3vw,34px);text-transform:uppercase;color:var(--cream);line-height:.92;margin-bottom:12px;}
+.concept-block p{font-family:var(--body);font-size:12px;line-height:1.65;color:var(--cream-dim);}
+
+/* LIVE BADGE */
+.live-badge{display:inline-flex;align-items:center;gap:7px;background:var(--blood);color:var(--cream);font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 10px;text-transform:uppercase;margin-bottom:14px;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--cream);animation:blink 1.2s infinite;}
+
+/* STAT */
+.stat-row{display:flex;gap:clamp(20px,3.5vw,50px);flex-wrap:wrap;}
+.stat b{display:block;font-family:var(--display);font-size:clamp(26px,3.8vw,48px);color:var(--cream);}
+.stat span{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-dim);}
+
+/* RESPONSIVE */
+@media(max-width:680px){
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .tl-row{grid-template-columns:80px 1fr;}
+  #nav{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  .glitch::before,.glitch::after{display:none;}
+  .slide.active .anim{animation:none;opacity:1;}
+}
+
+/* EDITABLE FIELDS */
+[contenteditable]{outline:none;cursor:text;}
+[contenteditable]:hover{background:rgba(215,255,61,0.04);}
+[contenteditable]:focus{background:rgba(215,255,61,0.07);outline:1px dashed rgba(215,255,61,0.3);}
+.editable-hint{position:fixed;bottom:42px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:rgba(215,255,61,0.35);letter-spacing:.12em;z-index:9999;pointer-events:none;}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="scanlines"></div>
+<div class="frame"></div>
+<div id="progress"></div>
+<div id="nav"></div>
+<div id="count"></div>
+<div id="slide-label"></div>
+<div class="scan-flash" id="scanFlash"></div>
+<div class="editable-hint">CLICK ANY TEXT TO EDIT FOR YOUR CLIENT</div>
+
+<div id="deck">
+
+<!-- ══ SLIDE 0 — COVER ══════════════════════════════════════════════════════ -->
+<div class="slide active" id="s0" data-label="COVER">
+  <div style="position:absolute;top:clamp(20px,3vw,38px);left:clamp(28px,5vw,64px);" class="anim">
+    <div class="mono" style="font-size:12px;">DIGITAL <span style="color:var(--acid);">WINE</span> MEDIA</div>
+  </div>
+  <div style="position:absolute;top:clamp(20px,3vw,38px);right:clamp(20px,3vw,40px);" class="anim d1">
+    <svg width="48" height="48" viewBox="0 0 56 56" fill="none">
+      <rect x="10" y="0" width="9" height="5" fill="#0c0c0c"/><rect x="37" y="0" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="10" y="51" width="9" height="5" fill="#0c0c0c"/><rect x="37" y="51" width="9" height="5" fill="#0c0c0c"/>
+      <rect x="5" y="5" width="12" height="1.5" fill="#d7ff3d"/><rect x="5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="5" width="12" height="1.5" fill="#d7ff3d"/><rect x="49.5" y="5" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="5" y="49.5" width="12" height="1.5" fill="#d7ff3d"/><rect x="5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <rect x="39" y="49.5" width="12" height="1.5" fill="#d7ff3d"/><rect x="49.5" y="39" width="1.5" height="12" fill="#d7ff3d"/>
+      <circle cx="28" cy="28" r="2.5" fill="#ff3b30"/>
+      <text x="28" y="23" text-anchor="middle" fill="#d7ff3d" font-family="'Arial Black',sans-serif" font-size="9" font-weight="900" letter-spacing="1">DWM</text>
+    </svg>
+  </div>
+  <div>
+    <div class="live-badge anim d1"><span class="live-dot"></span>CAMPAIGN PROPOSAL</div>
+    <h1 class="title t-xl glitch anim d2" data-text="[CLIENT" style="color:var(--cream-dim);font-size:clamp(40px,9vw,130px);" contenteditable spellcheck="false">[CLIENT</h1>
+    <h1 class="title t-xl anim d3" style="color:var(--acid);" contenteditable spellcheck="false">NAME]</h1>
+    <h1 class="title anim d4" style="font-size:clamp(20px,3.5vw,48px);color:rgba(237,231,217,0.25);" contenteditable spellcheck="false">× DIGITAL WINE MEDIA</h1>
+    <div class="rule anim d5" style="max-width:420px;"></div>
+    <p class="body anim d5" style="max-width:480px;" contenteditable spellcheck="false">A campaign production proposal prepared by Dillon Ward, Digital Wine Media. [Add campaign descriptor here — e.g. "Summer activation content series, July 2026"]</p>
+  </div>
+  <div style="position:absolute;bottom:clamp(20px,3vw,36px);left:clamp(28px,5vw,64px);right:clamp(28px,5vw,64px);display:flex;justify-content:space-between;align-items:center;" class="anim d6">
+    <span class="mono">PREPARED FOR <span style="color:var(--cream);" contenteditable spellcheck="false">[CLIENT NAME]</span></span>
+    <span class="mono" style="color:var(--acid);" contenteditable spellcheck="false">[DATE]</span>
+  </div>
+</div>
+
+<!-- ══ SLIDE 1 — THE VISION ══════════════════════════════════════════════════ -->
+<div class="slide" id="s1" data-label="THE VISION">
+  <div class="eyebrow anim">01 — THE VISION</div>
+  <h2 class="title t-lg anim d1">THE <span class="accent">CONCEPT.</span></h2>
+  <div class="acid-line anim d2"></div>
+  <div class="two-col" style="margin-top:22px;">
+    <div>
+      <div class="concept-block anim d3">
+        <div class="label">CAMPAIGN CONCEPT</div>
+        <h3 contenteditable spellcheck="false">[Campaign Title or Tagline Here]</h3>
+        <p contenteditable spellcheck="false">Describe the creative vision for this campaign in 2–3 sentences. What is the feeling, the tone, the world we are building for this client? What makes this specific to them and not generic?</p>
+      </div>
+      <div class="concept-block anim d4" style="border-left-color:var(--blood);margin-bottom:0;">
+        <div class="label" style="color:var(--blood);">THE BRIEF IN ONE LINE</div>
+        <h3 style="font-size:clamp(16px,2.2vw,26px);" contenteditable spellcheck="false">[Single sentence that captures the entire brief. Raw. Direct. No filler.]</h3>
+      </div>
+    </div>
+    <div>
+      <p class="body anim d3" contenteditable spellcheck="false">Expand on the campaign context here. What is the client's goal? What moment are we capturing, what story are we telling, what platform is this built for? Keep it short, punchy and specific to this brief.</p>
+      <div class="stat-row anim d5" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);">
+        <div class="stat"><b contenteditable spellcheck="false">1</b><span contenteditable spellcheck="false">shoot day</span></div>
+        <div class="stat"><b contenteditable spellcheck="false">5</b><span contenteditable spellcheck="false">deliverables</span></div>
+        <div class="stat"><b contenteditable spellcheck="false">48HR</b><span contenteditable spellcheck="false">turnaround</span></div>
+      </div>
+      <div style="margin-top:22px;" class="anim d6">
+        <span class="pill" contenteditable spellcheck="false">Tag 1</span>
+        <span class="pill" contenteditable spellcheck="false">Tag 2</span>
+        <span class="pill" contenteditable spellcheck="false">Tag 3</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2 — THE SHOOT ════════════════════════════════════════════════════ -->
+<div class="slide" id="s2" data-label="THE SHOOT">
+  <div class="eyebrow anim">02 — THE SHOOT</div>
+  <h2 class="title t-md anim d1">SHOOT <span class="accent">PLAN.</span></h2>
+  <div class="rule anim d2"></div>
+  <div class="two-col" style="margin-top:18px;">
+    <div>
+      <div class="three-col anim d3" style="grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+        <div class="card" style="padding:18px 16px;">
+          <div class="card-num">DATE</div>
+          <h3 style="font-size:16px;" contenteditable spellcheck="false">[Date]</h3>
+        </div>
+        <div class="card" style="padding:18px 16px;">
+          <div class="card-num">LOCATION</div>
+          <h3 style="font-size:16px;" contenteditable spellcheck="false">[Location]</h3>
+        </div>
+        <div class="card" style="padding:18px 16px;">
+          <div class="card-num">CREW</div>
+          <h3 style="font-size:16px;" contenteditable spellcheck="false">[1–3 ops]</h3>
+        </div>
+        <div class="card" style="padding:18px 16px;">
+          <div class="card-num">KIT</div>
+          <h3 style="font-size:16px;">Sony FX3 / A7SIII</h3>
+        </div>
+      </div>
+      <div class="card anim d4">
+        <div class="card-num">APPROACH</div>
+        <p contenteditable spellcheck="false">Describe the shoot approach here. Handheld, gimbal, multi-cam? Documentary or directed? What is the energy on the day and how are we capturing it? Keep it specific to the brief.</p>
+      </div>
+    </div>
+    <div>
+      <div class="mono anim d3" style="color:var(--acid);margin-bottom:12px;">SHOT LIST / KEY MOMENTS</div>
+      <div id="shot-list" class="anim d4">
+        <div class="del-row"><span class="del-label" contenteditable spellcheck="false">Opening sequence — arrival / atmosphere</span><span class="del-tag">HERO</span></div>
+        <div class="del-row"><span class="del-label" contenteditable spellcheck="false">Product / talent interaction — close detail</span><span class="del-tag">SOCIAL</span></div>
+        <div class="del-row"><span class="del-label" contenteditable spellcheck="false">Crowd / energy / reaction shots</span><span class="del-tag">FILLER</span></div>
+        <div class="del-row"><span class="del-label" contenteditable spellcheck="false">Key talent moment / money shot</span><span class="del-tag">HERO</span></div>
+        <div class="del-row"><span class="del-label" contenteditable spellcheck="false">Closing sequence / exit / aftermath</span><span class="del-tag">CLOSING</span></div>
+      </div>
+      <div class="mono anim d5" style="margin-top:16px;">AESTHETIC REFERENCE</div>
+      <p class="body anim d6" style="margin-top:8px;font-size:11.5px;" contenteditable spellcheck="false">Festival aftermovie energy. Handheld. Gritty. Low light. Colour grade: lifted shadows, pushed contrast, desaturated mids. Cut to the beat. Fast, sinister, alive.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3 — DELIVERABLES ════════════════════════════════════════════════ -->
+<div class="slide" id="s3" data-label="DELIVERABLES">
+  <div class="eyebrow anim">03 — DELIVERABLES</div>
+  <h2 class="title t-md anim d1">WHAT YOU <span class="accent">GET.</span></h2>
+  <div class="rule anim d2"></div>
+  <div class="two-col" style="margin-top:20px;">
+    <div>
+      <div class="anim d3">
+        <div class="del-row" style="border-top:1px solid var(--line);">
+          <div><span class="del-label" contenteditable spellcheck="false">Hero edit — 60–90 sec recap</span><br><span class="mono" style="font-size:9px;" contenteditable spellcheck="false">16:9 + 9:16 vertical cut included</span></div>
+          <span class="del-tag">INCLUDED</span>
+        </div>
+        <div class="del-row">
+          <div><span class="del-label" contenteditable spellcheck="false">Social reels — 15–30 sec cuts</span><br><span class="mono" style="font-size:9px;" contenteditable spellcheck="false">Platform ready, captioned</span></div>
+          <span class="del-tag" contenteditable spellcheck="false">×3</span>
+        </div>
+        <div class="del-row">
+          <div><span class="del-label" contenteditable spellcheck="false">Behind the scenes content</span><br><span class="mono" style="font-size:9px;" contenteditable spellcheck="false">Raw BTS for stories / organic posts</span></div>
+          <span class="del-tag">INCLUDED</span>
+        </div>
+        <div class="del-row">
+          <div><span class="del-label" contenteditable spellcheck="false">Still photography selects</span><br><span class="mono" style="font-size:9px;" contenteditable spellcheck="false">Edited, colour graded</span></div>
+          <span class="del-tag" contenteditable spellcheck="false">ADD-ON</span>
+        </div>
+        <div class="del-row" style="border-bottom:none;">
+          <div><span class="del-label" contenteditable spellcheck="false">Rush delivery option</span><br><span class="mono" style="font-size:9px;">Turnaround within 48 hours of shoot</span></div>
+          <span class="del-tag" contenteditable spellcheck="false">ADD-ON</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card anim d4" style="margin-bottom:14px;">
+        <div class="card-num">FORMAT & DELIVERY</div>
+        <p contenteditable spellcheck="false">All files delivered via Dropbox in platform-ready formats. MP4 H.264 for social, ProRes available on request. Captions embedded. Colour graded and sound designed. Ready to post.</p>
+      </div>
+      <div class="card anim d5">
+        <div class="card-num">REVISION ROUNDS</div>
+        <p>One revision round included per deliverable. Additional rounds available at agreed rate. Feedback window: 72 hours from delivery. Silence equals approval.</p>
+      </div>
+      <div class="anim d6" style="margin-top:14px;">
+        <div class="mono" style="color:var(--acid);margin-bottom:8px;">TIMELINE</div>
+        <p class="body" style="font-size:11.5px;" contenteditable spellcheck="false">Shoot: [DATE] · First cut: [DATE + 3–5 DAYS] · Final delivery: [DATE + 7–10 DAYS]</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4 — TIMELINE ════════════════════════════════════════════════════ -->
+<div class="slide" id="s4" data-label="TIMELINE">
+  <div class="eyebrow anim">04 — TIMELINE</div>
+  <h2 class="title t-md anim d1">FROM BRIEF<br>TO <span class="accent">LIVE.</span></h2>
+  <div style="margin-top:28px;position:relative;">
+    <div class="tl-row anim d2">
+      <div class="tl-date" contenteditable spellcheck="false">WEEK 1</div>
+      <div class="tl-content"><h4 contenteditable spellcheck="false">Brief Confirmed</h4><p contenteditable spellcheck="false">Deposit paid. Dates locked. Shot list agreed. Location recce if required.</p></div>
+      <div class="tl-dot"></div>
+    </div>
+    <div class="tl-row anim d3">
+      <div class="tl-date" contenteditable spellcheck="false">WEEK 2</div>
+      <div class="tl-content"><h4 contenteditable spellcheck="false">Shoot Day</h4><p contenteditable spellcheck="false">On location. Full crew. All footage captured and backed up same day.</p></div>
+      <div class="tl-dot"></div>
+    </div>
+    <div class="tl-row anim d4">
+      <div class="tl-date" contenteditable spellcheck="false">WEEK 2–3</div>
+      <div class="tl-content"><h4 contenteditable spellcheck="false">Edit & Grade</h4><p contenteditable spellcheck="false">Assembly, rough cut, colour grade, sound design. First cut delivered for review.</p></div>
+      <div class="tl-dot"></div>
+    </div>
+    <div class="tl-row anim d5">
+      <div class="tl-date" contenteditable spellcheck="false">WEEK 3</div>
+      <div class="tl-content"><h4 contenteditable spellcheck="false">Revisions</h4><p contenteditable spellcheck="false">One round of revisions. Feedback incorporated within 48 hours of receipt.</p></div>
+      <div class="tl-dot"></div>
+    </div>
+    <div class="tl-row anim d6">
+      <div class="tl-date" contenteditable spellcheck="false">WEEK 3–4</div>
+      <div class="tl-content" style="border-bottom:none;"><h4 contenteditable spellcheck="false">Final Delivery</h4><p contenteditable spellcheck="false">All files via Dropbox. Platform-ready. Balance invoice issued on delivery.</p></div>
+      <div class="tl-dot" style="background:var(--blood);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5 — WHY DWM ════════════════════════════════════════════════════ -->
+<div class="slide" id="s5" data-label="WHY DWM">
+  <div class="eyebrow anim">05 — WHY DWM</div>
+  <h2 class="title t-md anim d1">WHY <span class="accent">US.</span></h2>
+  <div class="rule anim d2"></div>
+  <div class="two-col" style="margin-top:18px;">
+    <div>
+      <p class="body anim d3">DWM has been inside the rooms where this kind of content is made for years. The client base across music, alcohol, festivals and brand activations is proof that the approach works at the highest level.</p>
+      <p class="body anim d4" style="margin-top:14px;">The output is darker, grittier and more urgent than anything else being produced in the Irish market. That is not an accident. It is a point of view earned on location, one shoot at a time.</p>
+      <div class="stat-row anim d5" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line);">
+        <div class="stat"><b>100%</b><span>Inbound clients</span></div>
+        <div class="stat"><b>0</b><span>Stock footage. Ever.</span></div>
+        <div class="stat"><b>1</b><span>Decision maker</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="anim d3" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="padding:18px 16px;">
+          <div class="card-num">RELEVANT WORK</div>
+          <p contenteditable spellcheck="false">Add a relevant past project here — campaign name, client, what you delivered and the result. Keep it to two sentences max.</p>
+        </div>
+        <div class="card" style="padding:18px 16px;">
+          <div class="card-num">RELEVANT WORK</div>
+          <p contenteditable spellcheck="false">Second relevant project. Match it to the client's industry or type of content. Proof of concept. Let the work speak.</p>
+        </div>
+        <div class="card" style="padding:18px 16px;background:rgba(215,255,61,0.06);border-color:rgba(215,255,61,0.2);">
+          <div class="card-num">PORTFOLIO</div>
+          <p>digitalwinemedia-prog.github.io</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6 — CTA ════════════════════════════════════════════════════════ -->
+<div class="slide" id="s6" data-label="NEXT STEPS" style="background:var(--void);">
+  <div class="eyebrow anim" style="color:var(--acid);">06 — NEXT STEPS</div>
+  <h2 class="title t-lg glitch anim d1" data-text="LET'S">LET'S</h2>
+  <h2 class="title t-lg anim d2" style="color:var(--acid);" contenteditable spellcheck="false">MAKE THIS.</h2>
+  <div class="rule anim d3" style="max-width:380px;margin:24px 0;"></div>
+  <div class="two-col anim d4" style="max-width:640px;gap:40px;">
+    <div>
+      <div class="mono" style="color:var(--acid);margin-bottom:10px;">TO CONFIRM</div>
+      <p class="body" style="font-size:12px;">Reply to confirm you want to proceed. We will send a deposit invoice and lock the dates immediately.</p>
+      <div style="margin-top:16px;">
+        <a style="font-family:var(--mono);font-size:11px;color:var(--cream);text-decoration:none;border-bottom:1px solid rgba(237,231,217,0.3);padding-bottom:3px;" href="mailto:digitalwinemedia@gmail.com">digitalwinemedia@gmail.com</a>
+      </div>
+    </div>
+    <div>
+      <div class="mono" style="color:var(--acid);margin-bottom:10px;">BOOKING TERMS</div>
+      <p class="body" style="font-size:12px;">50% deposit on confirmation. Balance on final delivery. Travel at cost. Quote valid 30 days from issue.</p>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:clamp(20px,3vw,36px);left:clamp(28px,5vw,64px);right:clamp(28px,5vw,64px);display:flex;justify-content:space-between;" class="anim d5">
+    <span class="mono">DIGITAL WINE MEDIA · DUBLIN · 2026</span>
+    <span class="mono" style="color:var(--acid);">QUOTE VALID 30 DAYS</span>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+const slides=Array.from(document.querySelectorAll('.slide'));
+const total=slides.length;
+let current=0,transitioning=false;
+const progress=document.getElementById('progress');
+const navEl=document.getElementById('nav');
+const countEl=document.getElementById('count');
+const labelEl=document.getElementById('slide-label');
+const flash=document.getElementById('scanFlash');
+
+slides.forEach((_,i)=>{
+  const s=document.createElement('span');
+  s.addEventListener('click',()=>goto(i));
+  navEl.appendChild(s);
+});
+
+function updateUI(){
+  const dots=navEl.querySelectorAll('span');
+  dots.forEach((d,i)=>d.classList.toggle('on',i===current));
+  progress.style.width=((current/(total-1))*100)+'%';
+  countEl.textContent=String(current+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+  labelEl.textContent=slides[current].dataset.label||'';
+}
+
+function runFlash(cb){
+  flash.classList.remove('run');void flash.offsetWidth;
+  flash.classList.add('run');setTimeout(cb,200);
+}
+
+function goto(n){
+  if(n===current||transitioning)return;
+  transitioning=true;
+  runFlash(()=>{
+    slides[current].classList.remove('active');
+    current=n;
+    slides[current].classList.add('active');
+    const anims=slides[current].querySelectorAll('.anim');
+    anims.forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation='';});
+    updateUI();
+    setTimeout(()=>{transitioning=false;},500);
+  });
+}
+
+function next(){if(current<total-1)goto(current+1);}
+function prev(){if(current>0)goto(current-1);}
+
+document.addEventListener('keydown',e=>{
+  const tag=document.activeElement.tagName;
+  const editable=document.activeElement.contentEditable==='true';
+  if(editable)return;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ')next();
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')prev();
+});
+
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)){dx<-40?next():dx>40?prev():null;}
+  else{dy<-40?next():dy>40?prev():null;}
+},{passive:true});
+
+let wt=null;
+document.addEventListener('wheel',e=>{
+  if(document.activeElement.contentEditable==='true')return;
+  e.preventDefault();
+  if(wt)return;
+  wt=setTimeout(()=>{wt=null;},650);
+  e.deltaY>0?next():prev();
+},{passive:false});
+
+updateUI();
+})();
+</script>
+</body>
+</html>
